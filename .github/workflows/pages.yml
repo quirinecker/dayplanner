@@ -6,8 +6,8 @@ on:
       - main
       - feature/github-pages
 
-env:
-  BASE_URL: https://quirinecker.github.io/dayplanner
+# env:
+#   BASE_URL: https://quirinecker.github.io/dayplanner
 
 jobs:
   deploy:
