@@ -30,7 +30,7 @@ jobs:
       - name: Generate static site
         run: |
           cd web
-          bun run generate
+          bun run build --preset github_pages
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
