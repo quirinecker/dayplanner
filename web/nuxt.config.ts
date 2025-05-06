@@ -5,5 +5,8 @@ export default defineNuxtConfig({
 	modules: ['@nuxt/eslint', '@nuxt/test-utils', '@nuxt/ui'],
 	app: {
 		baseURL: process.env.BASE_URL,
+	},
+	generate: {
+		fallback: true,
 	}
 })
