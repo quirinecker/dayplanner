@@ -1,0 +1,44 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - feature/github-pages
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: oven/bun:1  # Use Bun's official Docker image
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies with Bun
+        working-directory: ./web
+        run: bun install
+
+      - name: Build with Nuxt
+        working-directory: ./web
+        run: bunx nuxt build --preset github_pages
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./web/.output/public
+
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github_pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
