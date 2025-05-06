@@ -1,57 +1,44 @@
-name: Deploy Nuxt App to GitHub Pages (Bun)
+name: Deploy to GitHub Pages
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
       - feature/github-pages
 
-# env:
-#   BASE_URL: https://quirinecker.github.io/dayplanner
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    container:
+      image: oven/bun:1  # Use Bun's official Docker image
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
+      - uses: actions/checkout@v4
 
       - name: Install dependencies with Bun
-        run: |
-          cd web
-          bun install
+        working-directory: ./web
+        run: bun install
 
-      - name: Generate static site
-        run: |
-          cd web
-          bun run build --preset github_pages
+      - name: Build with Nuxt
+        working-directory: ./web
+        run: bunx nuxt build --preset github_pages
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: web/.output/public
-
+          path: ./web/.output/public
 
   deploy:
-    # Add a dependency to the build job
     needs: build
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
-    # Deploy to the github_pages environment
+      pages: write
+      id-token: write
     environment:
       name: github_pages
       url: ${{ steps.deployment.outputs.page_url }}
-    # Specify runner + deployment step
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
