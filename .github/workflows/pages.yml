@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feature/github-pages
 
 env:
   BASE_URL: https://quirinecker.github.io/dayplanner
