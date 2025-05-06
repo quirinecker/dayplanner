@@ -4,6 +4,6 @@ export default defineNuxtConfig({
 	devtools: { enabled: true },
 	modules: ['@nuxt/eslint', '@nuxt/test-utils', '@nuxt/ui'],
 	app: {
-		baseURL: process.env.BASE_URL || 'http://localhost:3000',
+		baseURL: process.env.BASE_URL,
 	}
 })
