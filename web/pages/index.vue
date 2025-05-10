@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { UButton } from '#components';
+
 
 </script>
 
 <template>
 	<div>
-		indx
+		<UButton>Click me</UButton>
 	</div>
 </template>
 
