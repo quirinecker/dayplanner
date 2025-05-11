@@ -102,8 +102,8 @@ function quickCreate(date: Moment, timespan: Timespan) {
 </script>
 
 <template>
-	<div class="w-full h-full flex flex-col">
-		<div class="calendar flex flex-row w-full flex-1 items-stretch">
+	<div class="w-full h-full flex flex-col overflow-scroll">
+		<div class="calendar flex flex-row w-full flex-1 items-stretch divide-x divide-muted">
 			<CalendarHeader :seperators="seperators" />
 
 			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"

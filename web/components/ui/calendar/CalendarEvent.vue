@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import type { Event } from '~/utils/event';
 
 const props = defineProps<{
 	event: CollissionWrapper

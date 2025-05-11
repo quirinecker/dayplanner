@@ -3,6 +3,7 @@ import { computed, ref, useTemplateRef } from 'vue';
 import CalendarSeperator from './CalendarSeperator.vue';
 import type { Moment } from 'moment';
 import CalendarEvent from './CalendarEvent.vue';
+import { Event } from '~/utils/event';
 import moment from 'moment';
 
 const props = defineProps<{
@@ -92,7 +93,7 @@ function dragDrop(_: DragEvent) {
 
 <template>
 	<div class="flex flex-col h-full grow">
-		<div class="flex justify-center items-center flex-col h-18 border-b-2 border-text">
+		<div class="flex justify-center items-center flex-col h-18 border-b-1 border-muted">
 			<div>{{ props.day.format('dd').toUpperCase() }}</div>
 			<div>{{ props.day.date() }}</div>
 		</div>
@@ -100,7 +101,7 @@ function dragDrop(_: DragEvent) {
 		<div id="col" ref="column" @mousedown="mousedown" @mouseup="mouseup" @mousemove="mouseover" @dragover="dragover"
 			@dragend="dragDrop" class="relative flex flex-col grow items-center">
 			<CalendarSeperator v-for="sep in seperators" :seperator="sep">
-				<hr class="w-full">
+				<hr class="w-full border-muted">
 			</CalendarSeperator>
 			<div class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
 				:style="{ height: `${height}px`, top: `${top}px` }"></div>
