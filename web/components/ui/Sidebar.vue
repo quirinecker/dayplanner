@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date';
+import ListItem from './ListItem.vue';
 import Title1 from './Title1.vue';
-import { UCard } from '#components';
 
 const selectedDate = shallowRef(new CalendarDate(2024, 6, 29));
 
@@ -13,15 +13,18 @@ defineProps<{
 
 <template>
 	<UCard class="w-64 h-full">
-		<template #header>
+		<template #header class="flex flex-col gap-2">
 			<Title1>Calendar</Title1>
 			<UCalendar v-model="selectedDate" />
 		</template>
-		<template #default>
+		<template #default class="flex-col gap-2">
 			<Title1>Todos</Title1>
 			<div class="flex gap-2 flex-col">
-				<UCard v-for="todo in todos">{{ todo }}</UCard>
+				<ListItem v-for="todo in todos">{{ todo }}</ListItem>
 			</div>
+			<UButton class="flex w-full justify-center ga">
+				+
+			</UButton>
 		</template>
 	</UCard>
 </template>

@@ -2,6 +2,7 @@
 import { UApp } from '#components';
 </script>
 
+
 <template>
 	<UApp>
 		<NuxtPage />
