@@ -10,11 +10,14 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@iconify-json/lucide": "^1.2.42",
     "@internationalized/date": "^3.8.0",
     "@nuxt/eslint": "1.3.0",
     "@nuxt/test-utils": "3.18.0",
     "@nuxt/ui": "3.1.1",
+    "@types/moment": "^2.13.0",
     "eslint": "^9.0.0",
+    "moment": "^2.30.1",
     "nuxt": "^3.17.2",
     "nuxt-app": "file:",
     "typescript": "^5.6.3",

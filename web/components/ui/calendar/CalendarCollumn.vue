@@ -92,13 +92,13 @@ function dragDrop(_: DragEvent) {
 
 <template>
 	<div class="flex flex-col h-full grow">
-		<div class="flex justify-center items-center flex-col bg-gray-600 h-18 text-white border-b-2 border-white">
+		<div class="flex justify-center items-center flex-col h-18 border-b-2 border-text">
 			<div>{{ props.day.format('dd').toUpperCase() }}</div>
 			<div>{{ props.day.date() }}</div>
 		</div>
 
 		<div id="col" ref="column" @mousedown="mousedown" @mouseup="mouseup" @mousemove="mouseover" @dragover="dragover"
-			@dragend="dragDrop" class="bg-gray-600 text-white relative flex flex-col grow items-center">
+			@dragend="dragDrop" class="relative flex flex-col grow items-center">
 			<CalendarSeperator v-for="sep in seperators" :seperator="sep">
 				<hr class="w-full">
 			</CalendarSeperator>
@@ -109,7 +109,8 @@ function dragDrop(_: DragEvent) {
 				<CalendarEvent v-for="event in column" :event="event" :columnIndex="index" @move="eventMove" />
 			</div>
 
-			<div v-if="draggedEvent !== undefined && draggedEvent.date.isSame(props.day)" class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
+			<div v-if="draggedEvent !== undefined && draggedEvent.date.isSame(props.day)"
+				class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
 				:style="{ height: `${draggedEvent.height}px`, top: `${draggedEvent.top}px` }"></div>
 		</div>
 	</div>

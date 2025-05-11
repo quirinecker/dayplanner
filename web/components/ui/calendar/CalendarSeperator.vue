@@ -12,7 +12,8 @@ const relativePositionOf = function (time: Moment) {
 </script>
 
 <template>
-	<div :style="{top: relativePositionOf(seperator.time)}" class="h-10 w-full flex justify-center items-center text-white border-white absolute -translate-y-1/2">
+	<div :style="{ top: relativePositionOf(seperator.time) }"
+		class="h-10 w-full flex justify-center items-center border-white absolute -translate-y-1/2">
 		<slot />
 	</div>
 </template>

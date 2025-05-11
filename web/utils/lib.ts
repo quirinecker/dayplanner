@@ -19,19 +19,8 @@ export type AnonymousEvent = {
 	to: Moment
 }
 
-export type SerializableEvent = {
-	title: string,
-	from: string,
-	to: string
-}
-
 export type EventWithCollisions = Event & {
 	collisions: number
-}
-
-export type EventDimensions = {
-	from: number,
-	to: number
 }
 
 export function percentToPixelDimensions(dimensions: EventDimensions, totalHeight: number): EventDimensions {

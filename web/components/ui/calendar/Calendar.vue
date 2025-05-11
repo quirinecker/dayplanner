@@ -3,9 +3,10 @@ import { computed, ref } from 'vue';
 import CalendarHeader from './CalendarHeader.vue';
 import CalendarCollumn from './CalendarCollumn.vue';
 import moment, { type Moment } from 'moment';
+import { Event } from '~/utils/event';
 
 const events = defineModel<Event[]>('events', { required: true })
-const date = ref(moment()) 
+const date = defineModel<Moment>('date', { required: true })
 const draggedEvent = ref<DraggedEvent | undefined>()
 
 type Day = {
@@ -18,7 +19,7 @@ const week = computed(() => {
 })
 
 function pushEventWithCollisionUpdate(array: CollissionWrapper[], event: Event, collisions: CollissionWrapper[], collisionCount: number) {
-	array.push({event: event, collisions: collisionCount })
+	array.push({ event: event, collisions: collisionCount })
 
 	for (let collision of collisions) {
 		collision.collisions = collisionCount
@@ -105,8 +106,8 @@ function quickCreate(date: Moment, timespan: Timespan) {
 		<div class="calendar flex flex-row w-full flex-1 items-stretch">
 			<CalendarHeader :seperators="seperators" />
 
-			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events" v-model:draggedEvent="draggedEvent"
-				@quick-create="quickCreate" />
+			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
+				v-model:draggedEvent="draggedEvent" @quick-create="quickCreate" />
 		</div>
 
 	</div>
