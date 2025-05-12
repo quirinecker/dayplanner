@@ -1,5 +1,4 @@
 import type { DateTime } from "luxon"
-import type { Moment } from "moment"
 
 export type Seperator = {
 	text: string,
@@ -16,8 +15,8 @@ export type Event = AnonymousEvent & {
 }
 
 export type AnonymousEvent = {
-	from: Moment,
-	to: Moment
+	from: DateTime,
+	to: DateTime
 }
 
 export type EventWithCollisions = Event & {

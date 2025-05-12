@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { Moment } from 'moment';
 import Calendar from './calendar/Calendar.vue'
 import { Event } from '~/utils/event';
 import { UCard } from '#components';
