@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-      - feature/github-pages
+      - fix/pipeline
 
 env:
   BASE_URL: /dayplanner
