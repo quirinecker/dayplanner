@@ -7,6 +7,9 @@ on:
       - main
       - feature/github-pages
 
+env:
+  BASE_URL: https://quirinecker.github.io/dayplanner
+
 jobs:
   build:
     runs-on: ubuntu-latest
