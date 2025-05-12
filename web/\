@@ -1,4 +1,6 @@
 import { DateTime } from "luxon"
+import type { Moment } from "moment"
+import moment from "moment"
 
 export class Event {
 	private static readonly MINUTES_IN_DAY = 24 * 60
@@ -12,8 +14,8 @@ export class Event {
 
 	getPercentDimensions(): EventDimensions {
 		const start_of_day = this.from.startOf('day')
-		const from_percentage = (this.from.diff(start_of_day, 'minutes').minutes) / Event.MINUTES_IN_DAY
-		const to_percentage = (this.to.diff(start_of_day, 'minutes').minutes) / Event.MINUTES_IN_DAY
+		const from_percentage = this.from.diff(start_of_day, 'minutes').minutes / Event.MINUTES_IN_DAY
+		const to_percentage = this.to.diff(start_of_day, 'minutes').minutes / Event.MINUTES_IN_DAY
 		return {
 			from: from_percentage * 100,
 			to: to_percentage * 100
@@ -100,7 +102,7 @@ export class Event {
 		const offset = mouseY - pixelDimensions.from
 
 		return {
-			date: this.from.startOf('day'),
+			date: moment(this.from).startOf('day'),
 			top: pixelDimensions.from,
 			height: pixelDimensions.to - pixelDimensions.from,
 			target: this,

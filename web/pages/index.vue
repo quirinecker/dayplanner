@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import MainContent from '~/components/ui/MainContent.vue';
 import Sidebar from '~/components/ui/Sidebar.vue';
 
 const todos = ["Staistics", "Computer Graphics", "Webdev"]
 const events = ref([])
-const date = ref(moment())
+const date = ref<DateTime>(DateTime.now())
 
 </script>
 

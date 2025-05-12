@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { Moment } from 'moment';
+import type { DateTime } from 'luxon';
 
 defineProps<{
 	seperator: Seperator
 }>();
 
-const relativePositionOf = function (time: Moment) {
-	return `${(time.hours() / 24) * 100}%`
+const relativePositionOf = function (time: DateTime) {
+	return `${((time.hour) / 24) * 100}%`
 }
 
 </script>

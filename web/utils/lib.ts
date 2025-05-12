@@ -1,8 +1,9 @@
+import type { DateTime } from "luxon"
 import type { Moment } from "moment"
 
 export type Seperator = {
 	text: string,
-	time: Moment
+	time: DateTime
 }
 
 export type Timespan = {
