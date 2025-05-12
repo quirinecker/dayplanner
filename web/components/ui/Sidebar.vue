@@ -6,9 +6,54 @@ import type { DropdownMenuItem } from '@nuxt/ui';
 import type { Moment } from 'moment';
 import moment from 'moment';
 
-const dropDownItems = ref<DropdownMenuItem[]>([
-	{ label: "Profile", icon: "i-lucide-user" },
-	{ label: "Settings", icon: "i-lucide-settings" }
+const colorMode = useColorMode();
+const currentTheme = ref<'dark' | 'system' | 'light'>(colorMode.preference as 'dark' | 'system' | 'light');
+
+const isLight = computed(() => currentTheme.value === 'light');
+const isDark = computed(() => currentTheme.value === 'dark');
+const isSystem = computed(() => currentTheme.value === 'system');
+
+watch(currentTheme, () => {
+	console.log(currentTheme.value)
+	colorMode.preference = currentTheme.value;
+})
+
+const dropDownItems = computed<DropdownMenuItem[][]>(() => [
+	[
+		{ label: "Profile", icon: "i-lucide-user" },
+		{ label: "Settings", icon: "i-lucide-settings" }
+	],
+	[
+		{
+			label: "light",
+			icon: "i-lucide-sun",
+			type: 'checkbox' as const,
+			checked: isLight.value,
+			onUpdateChecked(checked) {
+				currentTheme.value = checked ? 'light' : 'system'
+			}
+		},
+		{
+			label: "dark",
+			icon: "i-lucide-moon",
+			onSelect: (e) => console.log(e),
+			type: 'checkbox' as const,
+			checked: isDark.value,
+			onUpdateChecked(checked) {
+				currentTheme.value = checked ? 'dark' : 'system'
+			}
+		},
+		{
+			label: "system",
+			icon: "i-lucide-monitor-cog",
+			onSelect: (e) => console.log(e),
+			type: 'checkbox' as const,
+			checked: isSystem.value,
+			onUpdateChecked(checked) {
+				currentTheme.value = checked ? 'system' : 'system'
+			}
+		}
+	]
 ])
 
 const date = defineModel<Moment>('date', { required: true })
@@ -56,7 +101,8 @@ defineProps<{
 					content: 'w-60'
 				}">
 					<UButton variant="ghost" class="flex gap-1 items-center w-full text-text">
-						<UAvatar src="https://avatars.githubusercontent.com/u/33062936?s=400&u=9ee792d29ebcacccdbfb5af0539aab313d6d7185&v=4" />
+						<UAvatar
+							src="https://avatars.githubusercontent.com/u/33062936?s=400&u=9ee792d29ebcacccdbfb5af0539aab313d6d7185&v=4" />
 						Quirin Ecker
 					</UButton>
 				</UDropdownMenu>

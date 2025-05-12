@@ -3,7 +3,12 @@ export default defineNuxtConfig({
 	compatibilityDate: '2024-11-01',
 	devtools: { enabled: true },
 	css: ['~/assets/css/main.css'],
-	modules: ['@nuxt/eslint', '@nuxt/test-utils', '@nuxt/ui'],
+	modules: [
+		'@nuxt/eslint',
+		'@nuxt/test-utils',
+		'@nuxt/ui',
+		'@nuxtjs/color-mode'
+	],
 	app: {
 		baseURL: process.env.BASE_URL,
 	}
