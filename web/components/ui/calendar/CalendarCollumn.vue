@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue';
 import CalendarSeperator from './CalendarSeperator.vue';
-import type { Moment } from 'moment';
 import CalendarEvent from './CalendarEvent.vue';
 import { Event } from '~/utils/event';
-import moment from 'moment';
+import type { DateTime } from 'luxon';
 
 const props = defineProps<{
 	seperators: Seperator[],
-	day: Moment
+	day: DateTime
 	events: CollissionWrapper[][]
 }>()
 
 const emit = defineEmits<{
-	(e: 'quick-create', day: Moment, event: EventDimensions): void,
+	(e: 'quick-create', day: DateTime, event: EventDimensions): void,
 }>()
 
 const isDragging = ref(false)
@@ -58,7 +57,7 @@ function mouseup(_: MouseEvent) {
 
 	const timeFrom = Math.min(endY.value, startY.value) / column.value.offsetHeight
 	const timeTo = Math.max(endY.value, startY.value) / column.value.offsetHeight
-	emit('quick-create', moment(props.day), {
+	emit('quick-create', props.day, {
 		from: timeFrom,
 		to: timeTo
 	})
@@ -76,7 +75,7 @@ function dragover(e: DragEvent) {
 		return
 	}
 
-	if (!draggedEvent.value.date.isSame(props.day)) {
+	if (!draggedEvent.value.date.equals(props.day)) {
 		draggedEvent.value.date = props.day
 	}
 
@@ -94,12 +93,12 @@ function dragDrop(_: DragEvent) {
 <template>
 	<div class="flex flex-col h-full grow">
 		<div class="flex justify-center items-center flex-col h-18 border-b-1 border-muted">
-			<div>{{ props.day.format('dd').toUpperCase() }}</div>
-			<div>{{ props.day.date() }}</div>
+			<div>{{ props.day.toFormat('ccc').toUpperCase() }}</div>
+			<div>{{ props.day.day }}</div>
 		</div>
 
 		<div id="col" ref="column" @mousedown="mousedown" @mouseup="mouseup" @mousemove="mouseover" @dragover="dragover"
-			@dragend="dragDrop" class="relative flex flex-col grow items-center">
+			@dragend="dragDrop" class="relative flex flex-col grow items-center select-none">
 			<CalendarSeperator v-for="sep in seperators" :seperator="sep">
 				<hr class="w-full border-muted">
 			</CalendarSeperator>
@@ -110,7 +109,7 @@ function dragDrop(_: DragEvent) {
 				<CalendarEvent v-for="event in column" :event="event" :columnIndex="index" @move="eventMove" />
 			</div>
 
-			<div v-if="draggedEvent !== undefined && draggedEvent.date.isSame(props.day)"
+			<div v-if="draggedEvent !== undefined && draggedEvent.date.equals(props.day)"
 				class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
 				:style="{ height: `${draggedEvent.height}px`, top: `${draggedEvent.top}px` }"></div>
 		</div>

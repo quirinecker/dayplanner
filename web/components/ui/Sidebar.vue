@@ -3,8 +3,7 @@ import { CalendarDate } from '@internationalized/date';
 import ListItem from './ListItem.vue';
 import Title1 from './Title1.vue';
 import type { DropdownMenuItem } from '@nuxt/ui';
-import type { Moment } from 'moment';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 const colorMode = useColorMode();
 const currentTheme = ref<'dark' | 'system' | 'light'>(colorMode.preference as 'dark' | 'system' | 'light');
@@ -56,17 +55,17 @@ const dropDownItems = computed<DropdownMenuItem[][]>(() => [
 	]
 ])
 
-const date = defineModel<Moment>('date', { required: true })
+const date = defineModel<DateTime>('date', { required: true })
 
 const selectedDate = computed({
 	get() {
-		return new CalendarDate(date.value.year(), date.value.month() + 1, date.value.date())
+		return new CalendarDate(date.value.year, date.value.month, date.value.day)
 	},
 	set(value) {
 		if (value === undefined) {
 			return
 		}
-		date.value = moment(value.toString());
+		date.value = DateTime.fromISO(value.toString());
 	}
 })
 

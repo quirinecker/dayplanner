@@ -1,20 +1,19 @@
-import type { Moment } from "moment"
-import moment from "moment"
+import { DateTime } from "luxon"
 
 export class Event {
 	private static readonly MINUTES_IN_DAY = 24 * 60
 
 	constructor(
 		public readonly title: string,
-		public from: Moment,
-		public to: Moment
+		public from: DateTime,
+		public to: DateTime
 	) { }
 
 
 	getPercentDimensions(): EventDimensions {
-		const start_of_day = moment(this.from).startOf('day')
-		const from_percentage = this.from.diff(start_of_day, 'minutes') / Event.MINUTES_IN_DAY
-		const to_percentage = this.to.diff(start_of_day, 'minutes') / Event.MINUTES_IN_DAY
+		const start_of_day = this.from.startOf('day')
+		const from_percentage = (this.from.diff(start_of_day, 'minutes').minutes) / Event.MINUTES_IN_DAY
+		const to_percentage = (this.to.diff(start_of_day, 'minutes').minutes) / Event.MINUTES_IN_DAY
 		return {
 			from: from_percentage * 100,
 			to: to_percentage * 100
@@ -34,18 +33,18 @@ export class Event {
 	}
 
 	static fromSerializable(event: SerializableEvent) {
-		return new Event(event.title, moment(event.from), moment(event.to))
+		return new Event(event.title, DateTime.fromISO(event.from), DateTime.fromISO(event.to))
 	}
 
-	static fromPercentDimensions(title: string, dimensions: EventDimensions, date: Moment): Event {
+	static fromPercentDimensions(title: string, dimensions: EventDimensions, date: DateTime): Event {
 		return new Event(
 			title,
-			moment(date).startOf('day').minutes((dimensions.from / 100) * Event.MINUTES_IN_DAY),
-			moment(date).startOf('day').minutes((dimensions.to / 100) * Event.MINUTES_IN_DAY)
+			date.startOf('day').plus({ minutes: (dimensions.from / 100) * Event.MINUTES_IN_DAY }),
+			date.startOf('day').plus({ minutes: (dimensions.to / 100) * Event.MINUTES_IN_DAY })
 		)
 	}
 
-	static fromPixelDimensions(title: string, dimensions: EventDimensions, height: number, date: Moment): Event {
+	static fromPixelDimensions(title: string, dimensions: EventDimensions, height: number, date: DateTime): Event {
 		const percentDimensions: EventDimensions = {
 			from: dimensions.from * 100 / height,
 			to: dimensions.to * 100 / height
@@ -84,8 +83,8 @@ export class Event {
 	toSerializable(): SerializableEvent {
 		return {
 			title: this.title,
-			from: this.from.toISOString(),
-			to: this.to.toISOString()
+			from: this.from.toISO() ?? '',
+			to: this.to.toISO() ?? ''
 		}
 	}
 
@@ -101,7 +100,7 @@ export class Event {
 		const offset = mouseY - pixelDimensions.from
 
 		return {
-			date: moment(this.from).startOf('day'),
+			date: this.from.startOf('day'),
 			top: pixelDimensions.from,
 			height: pixelDimensions.to - pixelDimensions.from,
 			target: this,
@@ -118,8 +117,8 @@ export type EventDimensions = {
 
 export type SimpleEvent = {
 	title: string,
-	from: Moment,
-	to: Moment
+	from: DateTime,
+	to: DateTime
 }
 
 export type SerializableEvent = {
@@ -134,7 +133,7 @@ export type CollissionWrapper = {
 }
 
 export type DraggedEvent = {
-	date: Moment,
+	date: DateTime,
 	top: number,
 	height: number,
 	target: Event,

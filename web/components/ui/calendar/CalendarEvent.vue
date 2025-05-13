@@ -45,7 +45,7 @@ function dragStart(e: DragEvent) {
 	<div class="absolute rounded-lg h-0 top-20 bg-black opacity-45 p-2 flex flex-col z-10" @mousedown.stop
 		@mouseover.stop @mouseup.stop draggable="true" @dragstart="dragStart"
 		:style="{ top: `${top}%`, height: `${height}%`, left: `${left}%`, width: `${widht}%` }">
-		<div>{{ event.event.from.format('HH:mm') }} - {{ event.event.to.format('HH:mm') }}</div>
+		<div>{{ event.event.from.toFormat('HH:mm') }} - {{ event.event.to.toFormat('HH:mm') }}</div>
 		<div>{{ event.event.title }}</div>
 	</div>
 </template>

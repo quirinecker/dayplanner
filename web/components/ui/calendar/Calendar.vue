@@ -2,20 +2,20 @@
 import { computed, ref } from 'vue';
 import CalendarHeader from './CalendarHeader.vue';
 import CalendarCollumn from './CalendarCollumn.vue';
-import moment, { type Moment } from 'moment';
 import { Event } from '~/utils/event';
+import { DateTime } from 'luxon';
 
 const events = defineModel<Event[]>('events', { required: true })
-const date = defineModel<Moment>('date', { required: true })
+const date = defineModel<DateTime>('date', { required: true })
 const draggedEvent = ref<DraggedEvent | undefined>()
 
 type Day = {
-	date: Moment
+	date: DateTime
 	events: CollissionWrapper[][]
 }
 
 const week = computed(() => {
-	return moment(date.value).startOf('isoWeek')
+	return date.value.startOf('week')
 })
 
 function pushEventWithCollisionUpdate(array: CollissionWrapper[], event: Event, collisions: CollissionWrapper[], collisionCount: number) {
@@ -28,8 +28,9 @@ function pushEventWithCollisionUpdate(array: CollissionWrapper[], event: Event, 
 
 const days = computed<Day[]>(() => {
 	return [1, 2, 3, 4, 5, 6, 7].map((i) => {
+		const currentDate = date.value.startOf('week').plus({ day: i - 1 })
 		const filteredEvents = events.value.filter(
-			(event) => event.from >= moment(week.value).weekday(i).startOf('day') && event.to <= moment(week.value).weekday(i).endOf('day')
+			(event) => event.from >= currentDate.startOf('day') && event.to <= currentDate.endOf('day')
 		)
 
 		const sortedEvents = filteredEvents.sort((a, b) => a.from.valueOf() - b.from.valueOf())
@@ -62,7 +63,7 @@ const days = computed<Day[]>(() => {
 		}
 
 		return {
-			date: moment(week.value).weekday(i),
+			date: currentDate,
 			events: columns
 		}
 	})
@@ -72,17 +73,22 @@ const emits = defineEmits<{
 	(e: 'create', timespan: Event): void
 }>()
 
+const hour = (num: number) => {
+	return DateTime.now().startOf('day').plus({ hours: num })
+}
+
 const seperators = ref<Seperator[]>([
-	{ text: '3 AM', time: moment().hour(3) },
-	{ text: '6 AM', time: moment().hour(6) },
-	{ text: '9 AM', time: moment().hour(9) },
-	{ text: '12 PM', time: moment().hour(12) },
-	{ text: '3 PM', time: moment().hour(15) },
-	{ text: '6 PM', time: moment().hour(18) },
-	{ text: '9 PM', time: moment().hour(21) },
+	{ text: '3 AM', time: hour(3) },
+	{ text: '6 AM', time: hour(6) },
+	{ text: '9 AM', time: hour(9) },
+	{ text: '12 PM', time: hour(12) },
+	{ text: '3 PM', time: hour(15) },
+	{ text: '6 PM', time: hour(18) },
+	{ text: '9 PM', time: hour(21) },
 ])
 
-function quickCreate(date: Moment, timespan: Timespan) {
+
+function quickCreate(date: DateTime, timespan: Timespan) {
 	const eventTitle = prompt("Event title")
 
 	if (eventTitle === null) {
@@ -91,8 +97,8 @@ function quickCreate(date: Moment, timespan: Timespan) {
 
 	const newEvent: Event = new Event(
 		eventTitle,
-		moment(date).startOf('day').minutes(timespan.from * 24 * 60),
-		moment(date).startOf('day').minutes(timespan.to * 24 * 60)
+		date.startOf('day').plus({ minutes: timespan.from * 24 * 60 }),
+		date.startOf('day').plus({ minutes: timespan.to * 24 * 60 })
 	)
 
 	emits('create', newEvent)
