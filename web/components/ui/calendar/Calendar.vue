@@ -113,7 +113,7 @@ function quickCreate(date: DateTime, timespan: Timespan) {
 			<CalendarHeader :seperators="seperators" />
 
 			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
-				v-model:draggedEvent="draggedEvent" @quick-create="quickCreate" />
+				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="quickCreate" />
 		</div>
 
 	</div>

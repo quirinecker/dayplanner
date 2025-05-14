@@ -4,11 +4,13 @@ import CalendarSeperator from './CalendarSeperator.vue';
 import CalendarEvent from './CalendarEvent.vue';
 import { Event } from '~/utils/event';
 import type { DateTime } from 'luxon';
+import { UBadge } from '#components';
 
 const props = defineProps<{
 	seperators: Seperator[],
 	day: DateTime
 	events: CollissionWrapper[][]
+	date: DateTime
 }>()
 
 const emit = defineEmits<{
@@ -94,7 +96,8 @@ function dragDrop(_: DragEvent) {
 	<div class="flex flex-col h-full grow">
 		<div class="flex justify-center items-center flex-col h-18 border-b-1 border-muted">
 			<div>{{ props.day.toFormat('ccc').toUpperCase() }}</div>
-			<div>{{ props.day.day }}</div>
+			<UBadge class="rounded-full" v-if="date.startOf('day').equals(day.startOf('day'))">{{ props.day.day }}</UBadge>
+			<div v-else>{{ props.day.day }}</div>
 		</div>
 
 		<div id="col" ref="column" @mousedown="mousedown" @mouseup="mouseup" @mousemove="mouseover" @dragover="dragover"
