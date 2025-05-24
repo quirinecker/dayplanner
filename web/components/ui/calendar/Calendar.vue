@@ -70,7 +70,7 @@ const days = computed<Day[]>(() => {
 })
 
 const emits = defineEmits<{
-	(e: 'create', timespan: Event): void
+	(e: 'create', event: Event): void
 }>()
 
 const hour = (num: number) => {
@@ -108,7 +108,7 @@ function quickCreate(date: DateTime, timespan: Timespan) {
 </script>
 
 <template>
-	<div class="w-full h-full flex flex-col overflow-scroll">
+	<div class="w-full h-full flex flex-col">
 		<div class="calendar flex flex-row w-full flex-1 items-stretch divide-x divide-muted">
 			<CalendarHeader :seperators="seperators" />
 
