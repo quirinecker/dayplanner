@@ -7,7 +7,6 @@ import Sidebar from '~/components/ui/Sidebar.vue';
 import { Event, type SerializableEvent } from '~/utils/event';
 
 const todos = ["Staistics", "Computer Graphics", "Webdev"]
-//const { data: todo } = useFetch<string[]>('http://localhost:8080/todos')
 const date = ref<DateTime>(DateTime.now())
 const events = ref<Event[]>([])
 
@@ -20,11 +19,9 @@ onMounted(() => {
   events.value = eventsResponse.value?.map(Event.fromSerializable) ?? []
 })
 
-
 const { data: tasks } = await useAsyncData<string[]>(
     'tasks',
     () => {
-        //return new Promise((res) => res([]))
 		return axios.get("/tasks").then(result => {
 			console.log(result.data)
 			return result.data
@@ -36,11 +33,6 @@ async function postEvent(event: Event) {
 	console.log('posting')
 	await axios.post('/event', event.toSerializable())
 }
-
-function myUseAsyncData<T>(name: string, callback: () => Promise<T>): { data: T, refresh: () => void, error: any } {
-    throw 'Not implemented'
-}
-
 
 </script>
 
