@@ -1,9 +1,9 @@
 {
   "dependencies": {
     "@types/express": "^5.0.1",
+    "cors": "^2.8.5",
     "express": "^5.1.0"
   },
-
   "scripts": {
     "start": "bun main.ts"
   }

@@ -1,6 +1,10 @@
-import express from 'express';
+import express from 'express'
+import cors from 'cors'
 
 const app = express();
+
+app.use(cors())
+app.use(express.json());
 
 app.get('/', (req, res) => {
     res.send('Hello World');
@@ -8,13 +12,24 @@ app.get('/', (req, res) => {
 
 app.get('/tasks', (req, res) => {
     res.send(
-        {tasks: []}
+        ["Homework", "cleaning", "learn Arrow-functions"]
     );
 });
 
 app.get('/events', (req, res) => {
     res.send(
-        {events: []}
+        [
+            {
+                "title": "wedding",
+                "from": "2025-05-19T08:30:26.195+02:00",
+                "to": "2025-05-19T12:32:55.883+02:00"
+            },
+            {
+                "title": "funeral",
+                "from": "2025-05-19T15:26:34.178+02:00",
+                "to": "2025-05-19T18:12:43.409+02:00"
+            }
+        ]
     );
 });
 
@@ -71,6 +86,8 @@ app.post('/task', (req, res) => {
 app.post('/event', (req, res) => {
 
     const newEvent = req.body;
+
+    console.log(newEvent)
 
     //Validate
 

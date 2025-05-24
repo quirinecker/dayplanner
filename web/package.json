@@ -18,6 +18,7 @@
     "@nuxtjs/color-mode": "3.5.2",
     "@types/luxon": "^3.6.2",
     "@types/moment": "^2.13.0",
+    "axios": "^1.9.0",
     "eslint": "^9.0.0",
     "luxon": "^3.6.1",
     "moment": "^2.30.1",

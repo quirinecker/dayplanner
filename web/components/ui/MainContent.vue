@@ -7,11 +7,15 @@ import type { DateTime } from 'luxon';
 const events = defineModel<Event[]>('events', { required: true })
 const date = defineModel<DateTime>('date', { required: true })
 
+const emits = defineEmits<{
+	(e: 'createEvent', event: Event): void
+}>()
+
 </script>
 
 <template>
 	<UCard class="flex grow" :ui="{ body: 'w-full h-full' }">
-		<Calendar v-model:events="events" v-model:date="date"></Calendar>
+		<Calendar @create="(event) => emits('createEvent', event)"v-model:events="events" v-model:date="date"></Calendar>
 	</UCard>
 </template>
 
