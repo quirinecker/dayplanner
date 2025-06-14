@@ -10,3 +10,15 @@ export const event = sqliteTable('event', {
 	created_at: text().notNull().default(new Date().toISOString()),
 	updated_at: text().notNull().default(new Date().toISOString())
 })
+
+export const task = sqliteTable('task', {
+    id: int().primaryKey({ autoIncrement: true }),
+    userid: text().notNull(),
+	title: text().notNull(),
+	description: text().notNull(),
+    done: int().notNull(),
+    estimated_time: int().notNull(),
+    due_date: text().notNull(),
+	created_at: text().notNull().default(new Date().toISOString()),
+	updated_at: text().notNull().default(new Date().toISOString())
+})
