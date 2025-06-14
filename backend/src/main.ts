@@ -1,7 +1,11 @@
 import express from 'express'
 import cors from 'cors'
+import { drizzle } from 'drizzle-orm/libsql';
+import { event } from './db/schema';
 
+const db = drizzle("file:local.db");
 const app = express();
+const userId = "Detlef";
 
 app.use(cors())
 app.use(express.json());
@@ -16,21 +20,8 @@ app.get('/tasks', (req, res) => {
     );
 });
 
-app.get('/events', (req, res) => {
-    res.send(
-        [
-            {
-                "title": "wedding",
-                "from": "2025-05-19T08:30:26.195+02:00",
-                "to": "2025-05-19T12:32:55.883+02:00"
-            },
-            {
-                "title": "funeral",
-                "from": "2025-05-19T15:26:34.178+02:00",
-                "to": "2025-05-19T18:12:43.409+02:00"
-            }
-        ]
-    );
+app.get('/events', async(req, res) => {
+    res.send(await db.select().from(event))
 });
 
 app.get('/user/:id', (req, res) => {
@@ -83,11 +74,14 @@ app.post('/task', (req, res) => {
     res.status(200).json(newTask);
 });
 
-app.post('/event', (req, res) => {
+app.post('/event', async(req, res) => {
 
-    const newEvent = req.body;
+    const newEvent: typeof event.$inferInsert = req.body
+    newEvent.description = ""
+    newEvent.userid = userId
 
-    console.log(newEvent)
+    const returnedEvent = await db.insert(event).values(newEvent).returning()
+    console.log(returnedEvent)
 
     //Validate
 
