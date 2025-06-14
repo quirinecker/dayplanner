@@ -17,6 +17,10 @@ watch(currentTheme, () => {
 	colorMode.preference = currentTheme.value;
 })
 
+const emits = defineEmits<{
+	(e: 'createTask', name: string): void
+}>()
+
 const dropDownItems = computed<DropdownMenuItem[][]>(() => [
 	[
 		{ label: "Profile", icon: "i-lucide-user" },
@@ -73,6 +77,14 @@ defineProps<{
 	todos: string[]
 }>()
 
+function addTodo(){
+	const name = prompt("Todo name:")
+	console.log(name)
+	if (name !== null) {
+		emits('createTask', name)
+	}
+}
+
 </script>
 
 <template>
@@ -90,7 +102,7 @@ defineProps<{
 					</div>
 				</div>
 				<div class="flex">
-					<UButton size="xl" class="w-full flex justify-center">
+					<UButton size="xl" class="w-full flex justify-center" @click="addTodo">
 						+
 					</UButton>
 				</div>

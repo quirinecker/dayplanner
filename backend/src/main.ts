@@ -1,7 +1,8 @@
 import express from 'express'
 import cors from 'cors'
 import { drizzle } from 'drizzle-orm/libsql';
-import { event } from './db/schema';
+import { event, task } from './db/schema';
+import { eq, ne, gt, gte } from 'drizzle-orm';
 
 const db = drizzle("file:local.db");
 const app = express();
@@ -14,10 +15,10 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-app.get('/tasks', (req, res) => {
-    res.send(
-        ["Homework", "cleaning", "learn Arrow-functions"]
-    );
+app.get('/tasks', async(req, res) => {
+    const tasks = await db.select({ title: task.title }).from(task)
+    const titles = tasks.map(t => t.title)
+    res.send(titles);
 });
 
 app.get('/events', async(req, res) => {
@@ -63,15 +64,15 @@ app.get('/event/:id', (req, res) => {
     res.json(event);
 });
 
-app.post('/task', (req, res) => {
+app.post('/task', async(req, res) => {
 
-    const newTask = req.body;
+    const newTask = req.body
+    newTask.userid = userId
 
-    //Validate
+    const returnedTask = await db.insert(task).values(newTask).returning()
+    console.log(returnedTask)
 
-    //const newTaskWithId = db.createEvent(newTask)
-
-    res.status(200).json(newTask);
+    res.status(201).json(returnedTask);
 });
 
 app.post('/event', async(req, res) => {
@@ -83,11 +84,7 @@ app.post('/event', async(req, res) => {
     const returnedEvent = await db.insert(event).values(newEvent).returning()
     console.log(returnedEvent)
 
-    //Validate
-
-    //const newEventWithId = db.createEvent(newEvent)
-
-    res.status(201).json(newEvent);
+    res.status(201).json(returnedEvent);
 });
 
 app.put('/task', (req, res) => {
@@ -111,17 +108,17 @@ app.put('/event', (req, res) => {
     res.status(200).json(updatedEvent);
 });
 
-app.delete('/task/:id', (req, res) => {
-    const id = req.params['id'];
+app.delete('/task/:id', async(req, res) => {
+    const id = parseInt(req.params['id']);
 
-    //const success = db.deleteTask(id)
+    const success = await db.delete(task).where(eq(task.id, id))
     res.send("Deleted");
 });
 
-app.delete('/event', (req, res) => {
-    const id = req.params['id'];
+app.delete('/event/:id', async(req, res) => {
+    const id = parseInt(req.params['id']);
 
-    //const success = db.deleteEvent(id)
+    const success = await db.delete(event).where(eq(event.id, id))
     res.send("Deleted");
 });
 

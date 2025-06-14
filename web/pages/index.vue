@@ -30,15 +30,26 @@ const { data: tasks } = await useAsyncData<string[]>(
 )
 
 async function postEvent(event: Event) {
-	console.log('posting')
+	console.log('posting Event')
 	await axios.post('/event', event.toSerializable())
+}
+
+async function postTask(name: string) {
+	console.log('posting Task')
+  await axios.post('/task', {
+    title: name,
+    description: "",
+    done: false,
+    estimated_time: (new Date()).toISOString(), //TODO
+    due_date: (new Date()).toISOString(),
+  })
 }
 
 </script>
 
 <template>
     <div class="h-screen w-screen p-4 flex flex-row gap-5">
-        <Sidebar v-if="tasks !== null" :todos="tasks" v-model:date="date" />
+        <Sidebar v-if="tasks !== null" :todos="tasks" v-model:date="date" @create-task="postTask"/>
         <MainContent v-if="events !== null" v-model:events="events" v-model:date="date" @create-event="postEvent"/>
     </div>
 </template>
