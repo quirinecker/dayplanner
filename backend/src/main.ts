@@ -16,9 +16,9 @@ app.get('/', (req, res) => {
 });
 
 app.get('/tasks', async(req, res) => {
-    const tasks = await db.select({ title: task.title }).from(task)
-    const titles = tasks.map(t => t.title)
-    res.send(titles);
+    const tasks = await db.select().from(task)
+    console.log(tasks)
+    res.send(tasks);
 });
 
 app.get('/events', async(req, res) => {
@@ -38,17 +38,19 @@ app.get('/user/:id', (req, res) => {
 
 });
 
-app.get('/task/:id', (req, res) => {
+app.get('/task/:id', async(req, res) => {
 
-    const id = req.params['id'];
+    const id = parseInt(req.params['id']);
 
     if (id == null) {
         res.status(400).send({error: 'Needs an id'});
         return;
     }
 
-    const task = {id: id, name: 'Homework'}  //TODO
-    res.json(task);
+    const returnedTask = await db.select().from(task).where(eq(task.id, id))
+    //
+    console.log(returnedTask)
+    res.json(returnedTask);
 });
 
 app.get('/event/:id', (req, res) => {
