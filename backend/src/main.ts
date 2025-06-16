@@ -17,12 +17,11 @@ app.get('/', (req, res) => {
 
 app.get('/tasks', async(req, res) => {
     const tasks = await db.select().from(task)
-    console.log(tasks)
-    res.send(tasks);
+    res.status(200).send(tasks);
 });
 
 app.get('/events', async(req, res) => {
-    res.send(await db.select().from(event))
+    res.status(200).send(await db.select().from(event))
 });
 
 app.get('/user/:id', (req, res) => {
@@ -91,24 +90,30 @@ app.post('/event', async(req, res) => {
 
 app.put('/task', (req, res) => {
 
-    const updatedTask = req.body;
+    const id = parseInt(req.params['id']);
+    const updatedTask: Partial<typeof task.$inferSelect> = req.body
 
-    //Validate (having id)
-
-    //const updatedTaskWithId = db.updateTask(updatedTask)
+    if (id == null) {
+        res.status(400).send({error: 'Needs an id'});
+        return;
+    }
+    db.update(task).set(updatedTask).where(eq(task.id, id))
 
     res.status(200).json(updatedTask);
 });
 
 app.put('/event', (req, res) => {
-    const updatedEvent = req.body;
 
-    //Validate (having id)
+    const id = parseInt(req.params['id']);
+    const updatedEvent: Partial<typeof event.$inferSelect> = req.body
 
-    //const updatedEventWithId = db.updateEvent(updatedEvent)
+    if (id == null) {
+        res.status(400).send({error: 'Needs an id'});
+        return;
+    }
+    db.update(event).set(updatedEvent).where(eq(event.id, id))
 
-    res.status(200).json(updatedEvent);
-});
+    res.status(200).json(updatedEvent);});
 
 app.delete('/task/:id', async(req, res) => {
     const id = parseInt(req.params['id']);
