@@ -64,7 +64,7 @@ function dragStart(e: DragEvent) {
 				</template>
 				<template #default>
 					<div>{{ event.event.from.toFormat('HH:mm') }} - {{ event.event.to.toFormat('HH:mm') }}</div>
-					<div class="overflow-scroll pb-5">
+					<div class="overflow-scroll pb-5 overflow-shadow">
 						{{ event.event.description }}
 					</div>
 				</template>

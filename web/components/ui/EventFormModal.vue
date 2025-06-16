@@ -71,6 +71,7 @@ function submit() {
 	}
 
 	emit('submnitted', {
+		id: props.input.id,
 		title: form.data.title,
 		description: form.data.description,
 		from: DateTime.fromISO(form.data.from),
