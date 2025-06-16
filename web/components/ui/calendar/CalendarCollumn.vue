@@ -15,6 +15,9 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(e: 'quick-create', day: DateTime, event: EventDimensions): void,
+	(e: 'edit', event: Event): void
+	(e: 'moved', event: Event): void
+	(e: 'delete', event: Event): void
 }>()
 
 const isDragging = ref(false)
@@ -59,6 +62,13 @@ function mouseup(_: MouseEvent) {
 
 	const timeFrom = Math.min(endY.value, startY.value) / column.value.offsetHeight
 	const timeTo = Math.max(endY.value, startY.value) / column.value.offsetHeight
+
+	if (timeTo * column.value.offsetHeight - timeFrom * column.value.offsetHeight <= 10) {
+		startY.value = 0
+		endY.value = 0
+		return
+	}
+
 	emit('quick-create', props.day, {
 		from: timeFrom,
 		to: timeTo
@@ -87,6 +97,13 @@ function dragover(e: DragEvent) {
 
 function dragDrop(_: DragEvent) {
 	draggedEvent.value?.target.updateWithDraggedEvent(draggedEvent.value, column.value?.offsetHeight ?? 0)
+
+	if (draggedEvent.value === undefined){
+		draggedEvent.value = undefined
+		return
+	}
+
+	emit('moved', draggedEvent.value.target)
 	draggedEvent.value = undefined
 }
 
@@ -96,7 +113,8 @@ function dragDrop(_: DragEvent) {
 	<div class="flex flex-col h-full grow">
 		<div class="flex justify-center items-center flex-col h-18 border-b-1 border-muted">
 			<div>{{ props.day.toFormat('ccc').toUpperCase() }}</div>
-			<UBadge class="rounded-full" v-if="date.startOf('day').equals(day.startOf('day'))">{{ props.day.day }}</UBadge>
+			<UBadge class="rounded-full" v-if="date.startOf('day').equals(day.startOf('day'))">{{ props.day.day }}
+			</UBadge>
 			<div v-else>{{ props.day.day }}</div>
 		</div>
 
@@ -109,7 +127,8 @@ function dragDrop(_: DragEvent) {
 				:style="{ height: `${height}px`, top: `${top}px` }"></div>
 
 			<div v-for="[index, column] in events.entries()" class="flex flex-row w-11/12 h-full absolute top-0">
-				<CalendarEvent v-for="event in column" :event="event" :columnIndex="index" @move="eventMove" />
+				<CalendarEvent v-for="event in column" :event="event" :columnIndex="index" @move="eventMove"
+					@edit="event => emit(`edit`, event)" @delete="event => emit(`delete`, event)" />
 			</div>
 
 			<div v-if="draggedEvent !== undefined && draggedEvent.date.equals(props.day)"

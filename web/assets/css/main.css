@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+.overflow-shadow {
+	overflow-x: auto;
+	position: relative;
+	mask-image: linear-gradient(to right, rgba(0,0,0,1) 90%, rgba(0,0,0,0));
+	-webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 90%, rgba(0,0,0,0));
+}
+
 :root {
   --ui-primary: #C02942;
 --ui-text-dimmed: var(--ui-color-neutral-400);

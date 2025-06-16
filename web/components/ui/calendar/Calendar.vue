@@ -2,12 +2,20 @@
 import { computed, ref } from 'vue';
 import CalendarHeader from './CalendarHeader.vue';
 import CalendarCollumn from './CalendarCollumn.vue';
-import { Event } from '~/utils/event';
+import { Event, type SimpleEvent } from '~/utils/event';
 import { DateTime } from 'luxon';
+import EventFormModal from '../EventFormModal.vue';
 
 const events = defineModel<Event[]>('events', { required: true })
 const date = defineModel<DateTime>('date', { required: true })
 const draggedEvent = ref<DraggedEvent | undefined>()
+const createInput = ref<Partial<SimpleEvent>>({})
+const createModalOpened = ref(false)
+const editInput = ref<Partial<SimpleEvent>>({})
+const editContext = ref<{ event: Event }>()
+const editModalOpened = ref(false)
+const deleteModalOpened = ref(false)
+const deleteContext = ref<{ event: Event }>()
 
 type Day = {
 	date: DateTime
@@ -71,6 +79,8 @@ const days = computed<Day[]>(() => {
 
 const emits = defineEmits<{
 	(e: 'create', event: Event): void
+	(e: 'edit', event: Event): void
+	(e: 'delete', event: Event): void
 }>()
 
 const hour = (num: number) => {
@@ -87,33 +97,87 @@ const seperators = ref<Seperator[]>([
 	{ text: '9 PM', time: hour(21) },
 ])
 
-
-function quickCreate(date: DateTime, timespan: Timespan) {
-	const eventTitle = prompt("Event title")
-
-	if (eventTitle === null) {
-		return
+function openCreateModal(date: DateTime, timespan: Timespan) {
+	createInput.value = {
+		from: date.startOf('day').plus({ minutes: timespan.from * 24 * 60 }),
+		to: date.startOf('day').plus({ minutes: timespan.to * 24 * 60 }),
 	}
 
-	const newEvent: Event = new Event(
-		eventTitle,
-		date.startOf('day').plus({ minutes: timespan.from * 24 * 60 }),
-		date.startOf('day').plus({ minutes: timespan.to * 24 * 60 })
-	)
+	createModalOpened.value = true
+}
 
-	emits('create', newEvent)
-	events.value.push(newEvent)
+function create(simple: SimpleEvent) {
+	const event = Event.fromSimple(simple)
+	events.value.push(event)
+	emits('create', event)
+}
+
+function openEditModal(event: Event) {
+	editInput.value = event.toSimple()
+	editContext.value = { event: event }
+	editModalOpened.value = true
+}
+
+function edit(simple: SimpleEvent) {
+	editContext.value?.event.updateWithSimple(simple)
+	if (editContext.value === undefined) return
+	emits('edit', editContext.value.event)
+}
+
+function openDeleteModal(event: Event) {
+	deleteContext.value = { event: event }
+	deleteModalOpened.value = true
+}
+
+function deleteEvent() {
+	if (deleteContext.value === undefined) return
+	emits('delete', deleteContext.value?.event)
+	console.log(events.value)
+	events.value = events.value.filter(e => {
+		if (e.id === undefined || deleteContext.value?.event.id === undefined) {
+			return true
+		}
+
+		if (e.id === deleteContext.value?.event.id) {
+			return false
+		}
+
+		return true
+	})
+
+	deleteModalOpened.value = false
+}
+
+function moveEvent(event: Event) {
+	emits('edit', event)
 }
 
 </script>
 
 <template>
 	<div class="w-full h-full flex flex-col">
+		<EventFormModal action="create" @submnitted="event => create(event)" :input="createInput"
+			v-model:open="createModalOpened" />
+		<EventFormModal action="edit" @submnitted="event => edit(event)" :input="editInput"
+			v-model:open="editModalOpened" />
+
+		<UModal v-model:open="deleteModalOpened" title="Delete Event" description="Are you sure you want to delete this event?">
+			<template #footer>
+				<UButton variant="solid" @click="deleteEvent">
+					Delete
+				</UButton>
+				<UButton variant="solid" @click="deleteModalOpened = false">
+					Cancel
+				</UButton>
+			</template>
+		</UModal>
+
 		<div class="calendar flex flex-row w-full flex-1 items-stretch divide-x divide-muted">
 			<CalendarHeader :seperators="seperators" />
 
 			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
-				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="quickCreate" />
+				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="openCreateModal"
+				@edit="openEditModal" @delete="openDeleteModal" @moved="moveEvent" />
 		</div>
 
 	</div>
