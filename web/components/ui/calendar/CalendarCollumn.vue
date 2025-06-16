@@ -62,6 +62,13 @@ function mouseup(_: MouseEvent) {
 
 	const timeFrom = Math.min(endY.value, startY.value) / column.value.offsetHeight
 	const timeTo = Math.max(endY.value, startY.value) / column.value.offsetHeight
+
+	if (timeTo * column.value.offsetHeight - timeFrom * column.value.offsetHeight <= 10) {
+		startY.value = 0
+		endY.value = 0
+		return
+	}
+
 	emit('quick-create', props.day, {
 		from: timeFrom,
 		to: timeTo

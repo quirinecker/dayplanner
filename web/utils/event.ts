@@ -4,7 +4,8 @@ export class Event {
 	private static readonly MINUTES_IN_DAY = 24 * 60
 
 	constructor(
-		public readonly title: string,
+		public id: number | undefined,
+		public title: string,
 		public from: DateTime,
 		public to: DateTime,
 		public description: string
@@ -39,15 +40,28 @@ export class Event {
 	}
 
 	static fromSimple(event: SimpleEvent): Event {
-		return new Event(event.title, event.from, event.to, event.description)
+		return new Event(
+			event.id,
+			event.title,
+			event.from,
+			event.to,
+			event.description
+		)
 	}
 
 	static fromSerializable(event: SerializableEvent) {
-		return new Event(event.title, DateTime.fromISO(event.from), DateTime.fromISO(event.to), event.description)
+		return new Event(
+			event.id,
+			event.title,
+			DateTime.fromISO(event.from),
+			DateTime.fromISO(event.to),
+			event.description
+		)
 	}
 
-	static fromPercentDimensions(title: string, dimensions: EventDimensions, date: DateTime, description: string): Event {
+	static fromPercentDimensions(id: number | undefined, title: string, dimensions: EventDimensions, date: DateTime, description: string): Event {
 		return new Event(
+			id,
 			title,
 			date.startOf('day').plus({ minutes: (dimensions.from / 100) * Event.MINUTES_IN_DAY }),
 			date.startOf('day').plus({ minutes: (dimensions.to / 100) * Event.MINUTES_IN_DAY }),
@@ -55,13 +69,13 @@ export class Event {
 		)
 	}
 
-	static fromPixelDimensions(title: string, dimensions: EventDimensions, height: number, date: DateTime, description: string): Event {
+	static fromPixelDimensions(id: number | undefined, title: string, dimensions: EventDimensions, height: number, date: DateTime, description: string): Event {
 		const percentDimensions: EventDimensions = {
 			from: dimensions.from * 100 / height,
 			to: dimensions.to * 100 / height
 		}
 
-		return Event.fromPercentDimensions(title, percentDimensions, date, description)
+		return Event.fromPercentDimensions(id, title, percentDimensions, date, description)
 	}
 
 	static fromDraggedEvent(draggedEvent: DraggedEvent, height: number): Event {
@@ -71,6 +85,7 @@ export class Event {
 		}
 
 		return Event.fromPixelDimensions(
+			draggedEvent.target.id,
 			draggedEvent.target.title,
 			pixelDimensions,
 			height,
@@ -91,6 +106,7 @@ export class Event {
 
 	toSimple(): SimpleEvent {
 		return {
+			id: this.id,
 			title: this.title,
 			from: this.from,
 			to: this.to,
@@ -100,6 +116,7 @@ export class Event {
 
 	toSerializable(): SerializableEvent {
 		return {
+			id: this.id,
 			title: this.title,
 			from: this.from.toISO() ?? '',
 			to: this.to.toISO() ?? '',
@@ -135,6 +152,7 @@ export type EventDimensions = {
 }
 
 export type SimpleEvent = {
+	id: number | undefined,
 	title: string,
 	from: DateTime,
 	to: DateTime
@@ -142,6 +160,7 @@ export type SimpleEvent = {
 }
 
 export type SerializableEvent = {
+	id: number | undefined,
 	title: string,
 	from: string,
 	to: string

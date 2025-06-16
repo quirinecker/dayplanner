@@ -3,7 +3,7 @@
 </script>
 
 <template>
-	<UCard class="[&>*]:p-3">
+	<UCard class="[&>*]:p-3 w-full">
 		<slot />
 	</UCard>
 </template>

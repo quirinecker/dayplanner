@@ -132,7 +132,19 @@ function openDeleteModal(event: Event) {
 function deleteEvent() {
 	if (deleteContext.value === undefined) return
 	emits('delete', deleteContext.value?.event)
-	events.value = events.value.filter(e => e.title !== deleteContext.value?.event.title)
+	console.log(events.value)
+	events.value = events.value.filter(e => {
+		if (e.id === undefined || deleteContext.value?.event.id === undefined) {
+			return true
+		}
+
+		if (e.id === deleteContext.value?.event.id) {
+			return false
+		}
+
+		return true
+	})
+
 	deleteModalOpened.value = false
 }
 
