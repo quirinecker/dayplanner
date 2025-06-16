@@ -29,6 +29,15 @@ export class Event {
 		}
 	}
 
+	updateWithSimple(simple: SimpleEvent): Event {
+		this.title = simple.title
+		this.from = simple.from
+		this.to = simple.to
+		this.description = simple.description
+
+		return this
+	}
+
 	static fromSimple(event: SimpleEvent): Event {
 		return new Event(event.title, event.from, event.to, event.description)
 	}

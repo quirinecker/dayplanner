@@ -2,34 +2,20 @@
 import { computed, ref } from 'vue';
 import CalendarHeader from './CalendarHeader.vue';
 import CalendarCollumn from './CalendarCollumn.vue';
-import { Event } from '~/utils/event';
+import { Event, type SimpleEvent } from '~/utils/event';
 import { DateTime } from 'luxon';
-import { UTextarea } from '#components';
+import EventFormModal from '../EventFormModal.vue';
 
 const events = defineModel<Event[]>('events', { required: true })
 const date = defineModel<DateTime>('date', { required: true })
 const draggedEvent = ref<DraggedEvent | undefined>()
+const createInput = ref<Partial<SimpleEvent>>({})
 const createModalOpened = ref(false)
-const createContext = ref<{ date: DateTime, timespan: Timespan } | undefined>(undefined)
-const createModal = {
-	open: ref(false),
-	fromTimeField: ref<string>(''),
-	toTimeField: ref<string>(''),
-	toDateField: ref<string>(''),
-	fromDateField: ref<string>(''),
-	nameField: ref<string>(''),
-	descriptionField: ref<string>(''),
-	clear: () => {
-		createModal.nameField.value = ''
-		createModal.fromDateField.value = ''
-		createModal.toDateField.value = ''
-		createModal.fromTimeField.value = ''
-		createModal.toTimeField.value = ''
-		createModal.descriptionField.value = ''
-	}
-}
-
-const toast = useToast()
+const editInput = ref<Partial<SimpleEvent>>({})
+const editContext = ref<{ event: Event }>()
+const editModalOpened = ref(false)
+const deleteModalOpened = ref(false)
+const deleteContext = ref<{ event: Event }>()
 
 type Day = {
 	date: DateTime
@@ -93,6 +79,8 @@ const days = computed<Day[]>(() => {
 
 const emits = defineEmits<{
 	(e: 'create', event: Event): void
+	(e: 'edit', event: Event): void
+	(e: 'delete', event: Event): void
 }>()
 
 const hour = (num: number) => {
@@ -110,93 +98,74 @@ const seperators = ref<Seperator[]>([
 ])
 
 function openCreateModal(date: DateTime, timespan: Timespan) {
-	createContext.value = {
-		date: date,
-		timespan: timespan
+	createInput.value = {
+		from: date.startOf('day').plus({ minutes: timespan.from * 24 * 60 }),
+		to: date.startOf('day').plus({ minutes: timespan.to * 24 * 60 }),
 	}
 
-	const from = date.startOf('day').plus({ minutes: timespan.from * 24 * 60 })
-	const to = date.startOf('day').plus({ minutes: timespan.to * 24 * 60 })
-
-	createModal.fromDateField.value = from.toISODate() ?? ''
-	createModal.toDateField.value = to.toISODate() ?? ''
-	createModal.fromTimeField.value = from.toFormat('HH:mm')
-	createModal.toTimeField.value = to.toFormat('HH:mm')
-	createModal.open.value = true
+	createModalOpened.value = true
 }
 
-function create() {
-	const from = dateFromFields(createModal.fromDateField.value, createModal.fromTimeField.value)
-	const to = dateFromFields(createModal.toDateField.value, createModal.toTimeField.value)
-
-	if (!from.isValid) {
-		toast.add({
-			title: 'Invalid `from` date format'
-		})
-	}
-
-	if (!to.isValid) {
-		toast.add({
-			title: 'Invalid `to` date format'
-		})
-	}
-
-	if (createModal.nameField.value.trim() === '') {
-		toast.add({
-			title: 'Name is required'
-		})
-	}
-
-	const event = new Event(createModal.nameField.value, from, to, createModal.descriptionField.value)
-	emits('create', event)
-	createModal.clear()
-	createModal.open.value = false
+function create(simple: SimpleEvent) {
+	const event = Event.fromSimple(simple)
 	events.value.push(event)
+	emits('create', event)
 }
 
-function dateFromFields(date: string, time: string) {
-	return DateTime.fromFormat(`${date} ${time}`, 'yyyy-MM-dd HH:mm')
+function openEditModal(event: Event) {
+	editInput.value = event.toSimple()
+	editContext.value = { event: event }
+	editModalOpened.value = true
+}
+
+function edit(simple: SimpleEvent) {
+	editContext.value?.event.updateWithSimple(simple)
+	if (editContext.value === undefined) return
+	emits('edit', editContext.value.event)
+}
+
+function openDeleteModal(event: Event) {
+	deleteContext.value = { event: event }
+	deleteModalOpened.value = true
+}
+
+function deleteEvent() {
+	if (deleteContext.value === undefined) return
+	emits('delete', deleteContext.value?.event)
+	events.value = events.value.filter(e => e.title !== deleteContext.value?.event.title)
+	deleteModalOpened.value = false
+}
+
+function moveEvent(event: Event) {
+	emits('edit', event)
 }
 
 </script>
 
 <template>
 	<div class="w-full h-full flex flex-col">
-		<UModal v-model:open="createModal.open.value" title="Create Event"
-			description="Set name and change time of event before creation">
-			<template #body>
-				<div class="flex flex-col gap-2">
-					<UInput type="text" placeholder="Name" v-model="createModal.nameField.value" required />
-					<div class="flex flex-row gap-2">
-						<UInput class="grow" placeholder="2025-06-16" v-model="createModal.fromDateField.value"
-							icon="i-lucide-calendar" required />
-						<UInput class="grow" placeholder="15:34" v-model="createModal.fromTimeField.value"
-							icon="i-lucide-clock" required />
-					</div>
-					<div class="flex flex-row gap-2">
-						<UInput class="grow" placeholder="2025-06-16" v-model="createModal.toDateField.value"
-							icon="i-lucide-calendar" required />
-						<UInput class="grow" placeholder="15:34" v-model="createModal.toTimeField.value"
-							icon="i-lucide-clock" required />
-					</div>
-					<UTextarea type="text" placeholder="Description" v-model="createModal.descriptionField.value"
-						required />
-				</div>
-			</template>
+		<EventFormModal action="create" @submnitted="event => create(event)" :input="createInput"
+			v-model:open="createModalOpened" />
+		<EventFormModal action="edit" @submnitted="event => edit(event)" :input="editInput"
+			v-model:open="editModalOpened" />
+
+		<UModal v-model:open="deleteModalOpened" title="Delete Event" description="Are you sure you want to delete this event?">
 			<template #footer>
-				<UButton variant="solid" @click="create">
-					Create
+				<UButton variant="solid" @click="deleteEvent">
+					Delete
 				</UButton>
-				<UButton variant="soft">
+				<UButton variant="solid" @click="deleteModalOpened = false">
 					Cancel
 				</UButton>
 			</template>
 		</UModal>
+
 		<div class="calendar flex flex-row w-full flex-1 items-stretch divide-x divide-muted">
 			<CalendarHeader :seperators="seperators" />
 
 			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
-				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="openCreateModal" />
+				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="openCreateModal"
+				@edit="openEditModal" @delete="openDeleteModal" @moved="moveEvent" />
 		</div>
 
 	</div>
