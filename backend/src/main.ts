@@ -79,7 +79,6 @@ app.post('/task', async(req, res) => {
 app.post('/event', async(req, res) => {
 
     const newEvent: typeof event.$inferInsert = req.body
-    newEvent.description = ""
     newEvent.userid = userId
 
     const returnedEvent = await db.insert(event).values(newEvent).returning()
