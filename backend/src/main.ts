@@ -8,6 +8,12 @@ const db = drizzle("file:local.db");
 const app = express();
 const userId = "Detlef";
 
+type Prettify<T> = {
+	[K in keyof T]: T[K];
+} & {};
+
+type TaskResponse = Prettify<Omit<typeof task.$inferSelect, 'done'> & { done: boolean }>
+
 app.use(cors())
 app.use(express.json());
 
@@ -15,9 +21,11 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-app.get('/tasks', async(req, res) => {
-    const tasks = await db.select().from(task)
-    res.status(200).send(tasks);
+app.get('/tasks', async (req, res) => {
+	const tasks: typeof task.$inferSelect[] = await db.select().from(task)
+	res.status(200).send(tasks.map<TaskResponse>(task => {
+		return { ...task, done: task.done === 1 }
+	}));
 });
 
 app.get('/events', async(req, res) => {

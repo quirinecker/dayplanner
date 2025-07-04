@@ -23,7 +23,7 @@ type Task = {
 	userid: string
 	title: string
 	description: string
-	done: number
+	done: boolean
 	estimated_time: string
 	due_date: string
 	created_at: string
@@ -68,7 +68,7 @@ async function deleteTask(id: number) {
 
 <template>
 	<div class="h-screen w-screen p-4 flex flex-row gap-5">
-		<Sidebar v-if="tasks !== null" :todos="tasks" v-model:date="date" @create-task="postTask"
+		<Sidebar v-if="tasks !== null" v-model:tasks="tasks" v-model:date="date" @create-task="postTask"
 			@delete-task="deleteTask" />
 		<MainContent v-if="events !== null" v-model:events="events" v-model:date="date" @create-event="postEvent" />
 	</div>
