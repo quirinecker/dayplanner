@@ -23,6 +23,7 @@ app.get('/', (req, res) => {
 
 app.get('/tasks', async (req, res) => {
 	const tasks: typeof task.$inferSelect[] = await db.select().from(task)
+	console.log(tasks)
 	res.status(200).send(tasks.map<TaskResponse>(task => {
 		return { ...task, done: task.done === 1 }
 	}));
@@ -78,6 +79,7 @@ app.post('/task', async(req, res) => {
     const newTask = req.body
     newTask.userid = userId
 
+	console.log(newTask)
     const returnedTask = await db.insert(task).values(newTask).returning()
     console.log(returnedTask)
 

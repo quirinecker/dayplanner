@@ -5,41 +5,26 @@ import MainContent from '~/components/ui/MainContent.vue';
 import Sidebar from '~/components/ui/Sidebar.vue';
 import { Event, type SerializableEvent } from '~/utils/event';
 
-const todos = ["Staistics", "Computer Graphics", "Webdev"]
 const date = ref<DateTime>(DateTime.now())
 const events = ref<Event[]>([])
 
 const { data: eventsResponse } = await useAsyncData<SerializableEvent[]>(
 	'events',
-	() => axios.get('/events').then(res => res.data)
+	() => axios.get<SerializableEvent[]>('/events').then(res => res.data)
+);
+
+const {data: tasksResponse, refresh} = await useAsyncData<SerializableTask[]>(
+	'tasks',
+	() => axios.get<SerializableTask[]>('/tasks').then(res => res.data)
 );
 
 onMounted(() => {
 	events.value = eventsResponse.value?.map(Event.fromSerializable) ?? []
 })
 
-type Task = {
-	id: number
-	userid: string
-	title: string
-	description: string
-	done: boolean
-	estimated_time: string
-	due_date: string
-	created_at: string
-	updated_at: string
-}
-
-
-const { data: tasks, refresh } = await useAsyncData<Task[]>(
-	'tasks',
-	() => {
-		return axios.get("/tasks").then(result => {
-			console.log(result.data)
-			return result.data
-		})
-	}
-)
+const tasks = computed(() => {
+	return tasksResponse.value?.map(Task.fromSerializable) ?? []
+})
 
 async function postEvent(event: Event) {
 	console.log('posting Event')
@@ -52,7 +37,7 @@ async function postTask(name: string) {
 		title: name,
 		description: "",
 		done: false,
-		estimated_time: (new Date()).toISOString(), //TODO
+		estimated_time: 0,
 		due_date: (new Date()).toISOString(),
 	})
 	await refresh()

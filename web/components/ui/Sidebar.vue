@@ -4,11 +4,13 @@ import ListItem from './ListItem.vue';
 import Title1 from './Title1.vue';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { DateTime } from 'luxon';
-import type { USeparator } from '#components';
 
 const colorMode = useColorMode();
+const toast = useToast()
 
 const currentTheme = ref<'dark' | 'system' | 'light'>(colorMode.preference as 'dark' | 'system' | 'light');
+const showTaskFormModal = ref(false);
+const taskFormModalInput = ref<Partial<Task>>({});
 
 const date = defineModel<DateTime>('date', { required: true })
 const tasks = defineModel<Task[]>('tasks', { required: true })
@@ -76,19 +78,6 @@ const selectedDate = computed({
 	}
 })
 
-type Task = {
-	id: number
-	userid: string
-	title: string
-	description: string
-	done: boolean
-	estimated_time: string
-	due_date: string
-	created_at: string
-	updated_at: string
-}
-
-
 function addTask() {
 	const name = prompt("Todo name:")
 	console.log(name)
@@ -97,16 +86,30 @@ function addTask() {
 	}
 }
 function deleteTask(todo: Task) {
+	if (todo.id === undefined) {
+		toast.add({
+			title: "Task does not exist anymore"
+		})
+		return
+	}
+
 	emits('deleteTask', todo.id)
 }
 function editTask(task: Task) {
 	emits('editTask', task)
 }
 
+function openTaskFormModal(task: Partial<Task>) {
+	taskFormModalInput.value = task
+	showTaskFormModal.value = true
+}
+
 </script>
 
 <template>
 	<UCard class="flex w-64 h-full" :ui="{ body: 'w-full' }">
+		<UiTaskFormModal v-model:open="showTaskFormModal" :input="taskFormModalInput" action="create" />
+
 		<div class="flex flex-col h-full w-full gap-5">
 			<header class="flex flex-col gap-2">
 				<Title1>Calendar</Title1>
@@ -123,14 +126,14 @@ function editTask(task: Task) {
 									<UCheckbox v-model="task.done" @change="() => editTask(task)" />{{ task.title }}
 								</span>
 								<div class="flex gap-1">
-									<UButton size="xs" color="neutral" class="flex justify-center" icon="mingcute:pencil-line"
-										@click="() => editTask(task)"/>
-									<UButton size="xs" color="primary" class="flex justify-center" icon="octicon:trashcan-16"
-										@click="() => deleteTask(task)" />
+									<UButton size="xs" color="neutral" class="flex justify-center"
+										icon="mingcute:pencil-line" @click="() => editTask(task)" />
+									<UButton size="xs" color="primary" class="flex justify-center"
+										icon="octicon:trashcan-16" @click="() => deleteTask(task)" />
 								</div>
 							</div>
 						</ListItem>
-						<USeparator label="Done" v-if="todoTasks.length !== 0"/>
+						<USeparator label="Done" v-if="todoTasks.length !== 0" />
 						<ListItem v-for="task in doneTasks">
 							<div class="flex w-full gap-4 items-center">
 								<span
@@ -138,17 +141,17 @@ function editTask(task: Task) {
 									<UCheckbox v-model="task.done" @change="() => editTask(task)" />{{ task.title }}
 								</span>
 								<div class="flex gap-1">
-									<UButton size="xs" color="neutral" class="flex justify-center" icon="mingcute:pencil-line"
-										@click="() => editTask(task)"/>
+									<UButton size="xs" color="neutral" class="flex justify-center"
+										icon="mingcute:pencil-line" @click="() => editTask(task)" />
 									<UButton size="xs" color="primary" class="flex justify-center"
-										@click="() => deleteTask(task)" icon="octicon:trashcan-16"/>
+										@click="() => deleteTask(task)" icon="octicon:trashcan-16" />
 								</div>
 							</div>
 						</ListItem>
 					</div>
 				</div>
 				<div class="flex">
-					<UButton size="xl" class="w-full flex justify-center" @click="addTask">
+					<UButton size="xl" class="w-full flex justify-center" @click="() => openTaskFormModal({})">
 						+
 					</UButton>
 				</div>
