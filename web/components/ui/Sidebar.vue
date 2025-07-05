@@ -9,14 +9,15 @@ const colorMode = useColorMode();
 const toast = useToast()
 
 const currentTheme = ref<'dark' | 'system' | 'light'>(colorMode.preference as 'dark' | 'system' | 'light');
-const showTaskFormModal = ref(false);
+const showTaskCreateModal = ref(false);
+const showTaskEditModal = ref(false);
 const taskFormModalInput = ref<Partial<Task>>({});
 
 const date = defineModel<DateTime>('date', { required: true })
 const tasks = defineModel<Task[]>('tasks', { required: true })
 
 const emits = defineEmits<{
-	(e: 'createTask', name: string): void
+	(e: 'createTask', task: Task): void
 	(e: 'deleteTask', id: number): void
 	(e: 'editTask', task: Task): void
 }>()
@@ -78,22 +79,22 @@ const selectedDate = computed({
 	}
 })
 
-function addTask() {
-	const name = prompt("Todo name:")
-	console.log(name)
-	if (name !== null) {
-		emits('createTask', name)
-	}
+function addTask(task: Task) {
+	tasks.value.push(task)
+	console.log(tasks.value)
+	emits('createTask', task)
 }
-function deleteTask(todo: Task) {
-	if (todo.id === undefined) {
+function deleteTask(task: Task) {
+	if (task.id === undefined) {
 		toast.add({
 			title: "Task does not exist anymore"
 		})
 		return
 	}
 
-	emits('deleteTask', todo.id)
+	tasks.value = tasks.value.filter(t => t.id !== task.id)
+
+	emits('deleteTask', task.id)
 }
 function editTask(task: Task) {
 	emits('editTask', task)
@@ -101,14 +102,22 @@ function editTask(task: Task) {
 
 function openTaskFormModal(task: Partial<Task>) {
 	taskFormModalInput.value = task
-	showTaskFormModal.value = true
+	showTaskCreateModal.value = true
+}
+
+function openTaskEditModal(task: Task) {
+	taskFormModalInput.value = task
+	showTaskEditModal.value = true
 }
 
 </script>
 
 <template>
 	<UCard class="flex w-64 h-full" :ui="{ body: 'w-full' }">
-		<UiTaskFormModal v-model:open="showTaskFormModal" :input="taskFormModalInput" action="create" />
+		<UiTaskFormModal v-model:open="showTaskCreateModal" :input="taskFormModalInput" action="create"
+			@submnitted="addTask" />
+		<UiTaskFormModal v-model:open="showTaskEditModal" :input="taskFormModalInput" action="edit"
+			@submnitted="editTask" />
 
 		<div class="flex flex-col h-full w-full gap-5">
 			<header class="flex flex-col gap-2">
@@ -117,7 +126,7 @@ function openTaskFormModal(task: Partial<Task>) {
 			</header>
 			<div class="flex flex-col grow justify-between">
 				<div class="flex flex-col gap-2">
-					<Title1>Todos</Title1>
+					<Title1>Tasks</Title1>
 					<div class="flex gap-2 flex-col">
 						<ListItem v-for="task in todoTasks">
 							<div class="flex w-full gap-4 items-center">
@@ -127,7 +136,7 @@ function openTaskFormModal(task: Partial<Task>) {
 								</span>
 								<div class="flex gap-1">
 									<UButton size="xs" color="neutral" class="flex justify-center"
-										icon="mingcute:pencil-line" @click="() => editTask(task)" />
+										icon="mingcute:pencil-line" @click="() => openTaskEditModal(task)" />
 									<UButton size="xs" color="primary" class="flex justify-center"
 										icon="octicon:trashcan-16" @click="() => deleteTask(task)" />
 								</div>
@@ -142,7 +151,7 @@ function openTaskFormModal(task: Partial<Task>) {
 								</span>
 								<div class="flex gap-1">
 									<UButton size="xs" color="neutral" class="flex justify-center"
-										icon="mingcute:pencil-line" @click="() => editTask(task)" />
+										icon="mingcute:pencil-line" @click="() => openTaskEditModal(task)" />
 									<UButton size="xs" color="primary" class="flex justify-center"
 										@click="() => deleteTask(task)" icon="octicon:trashcan-16" />
 								</div>

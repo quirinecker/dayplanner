@@ -35,6 +35,7 @@ watchEffect(() => {
 	descriptionField.value = props.input.description ?? ''
 	estimatedTimeField.value = (((props.input.estimated_time) ?? 0) / 60)
 	dueDateField.value = props.input.due_date?.toFormat('yyyy-MM-dd') ?? ''
+	dueTimeField.value = props.input.due_date?.toFormat('HH:mm') ?? ''
 })
 
 const formSchema = z.object({
@@ -89,10 +90,13 @@ function cancel() {
 		<template #body>
 			<div class="flex flex-col gap-2">
 				<UInput type="text" placeholder="Name" v-model="titleField" required />
+				<UInput type="number" class="grow" placeholder="estimated time in hours" v-model="estimatedTimeField"
+					icon="mdi:stopwatch-outline" required />
 				<div class="flex flex-row gap-2">
-					<UInput class="grow" placeholder="2025-06-16" v-model="dueDateField" icon="i-lucide-calendar"
+					<UInput type="date" class="grow" placeholder="due data e.g 2025-06-16" v-model="dueDateField"
+						icon="i-lucide-calendar" required />
+					<UInput class="grow" placeholder="due time e.g 15:34" v-model="dueTimeField" icon="i-lucide-clock"
 						required />
-					<UInput class="grow" placeholder="15:34" v-model="dueTimeField" icon="i-lucide-clock" required />
 				</div>
 				<UTextarea type="text" placeholder="Description" v-model="descriptionField" required />
 			</div>
