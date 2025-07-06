@@ -18,6 +18,7 @@ const emit = defineEmits<{
 	(e: 'edit', event: Event): void
 	(e: 'moved', event: Event): void
 	(e: 'delete', event: Event): void
+	(e: 'edit-task', task: Task): void
 }>()
 
 const isDragging = ref(false)
@@ -25,6 +26,7 @@ const startY = ref(0)
 const endY = ref(0)
 const column = useTemplateRef('column')
 const draggedEvent = defineModel<DraggedEvent | undefined>('draggedEvent')
+const draggedTask = defineModel<DraggedTask | undefined>('draggedTask')
 
 const height = computed(() => {
 	return Math.abs(endY.value - startY.value)
@@ -83,6 +85,30 @@ function eventMove(mouseEvent: MouseEvent, event: Event) {
 }
 
 function dragover(e: DragEvent) {
+	e.preventDefault()
+	drawDraggedEvent(e)
+	drawDraggedTask(e)
+}
+
+function drawDraggedTask(event: DragEvent) {
+	if (draggedTask.value === undefined) {
+		return;
+	}
+
+	if (draggedTask.value.dragInfo === undefined) {
+		draggedTask.value.dragInfo = {
+			height: (draggedTask.value.target.estimated_time / 60 / 24) * (column.value?.offsetHeight ?? 0),
+			top: absoluteToRelativeY(event.clientY),
+			date: props.day
+		}
+		drawDraggedTask(event)
+	}
+
+	draggedTask.value.dragInfo.top = absoluteToRelativeY(event.clientY)
+	draggedTask.value.dragInfo.date = props.day
+}
+
+function drawDraggedEvent(event: DragEvent) {
 	if (draggedEvent.value === undefined) {
 		return
 	}
@@ -92,19 +118,57 @@ function dragover(e: DragEvent) {
 	}
 
 
-	draggedEvent.value.top = absoluteToRelativeY(e.clientY) - draggedEvent.value.offset
+	draggedEvent.value.top = absoluteToRelativeY(event.clientY) - draggedEvent.value.offset
 }
 
 function dragDrop(_: DragEvent) {
-	draggedEvent.value?.target.updateWithDraggedEvent(draggedEvent.value, column.value?.offsetHeight ?? 0)
+	console.log('dropping')
+	if (draggedEvent.value !== undefined) {
+		updateEventWithDraggedEvent()
+	}
 
-	if (draggedEvent.value === undefined){
+	if (draggedTask.value !== undefined) {
+		console.log('dropping task')
+		updateTaskWithDraggedTask()
+	}
+}
+
+function updateEventWithDraggedEvent() {
+	if (draggedEvent.value == undefined) return
+
+	if (draggedEvent.value.target.task !== undefined) {
+		draggedEvent.value.target.task.scheduled_at = draggedEvent.value.date.startOf('day').plus({
+			minutes: draggedEvent.value.top / (column.value?.offsetHeight ?? 1) * 24 * 60
+		})
+	} else {
+		draggedEvent.value?.target.updateWithDraggedEvent(draggedEvent.value, column.value?.offsetHeight ?? 0)
+	}
+
+	if (draggedEvent.value === undefined) {
 		draggedEvent.value = undefined
 		return
 	}
 
 	emit('moved', draggedEvent.value.target)
 	draggedEvent.value = undefined
+}
+
+function updateTaskWithDraggedTask() {
+	if (draggedTask.value === undefined) {
+		return
+	}
+
+	if (draggedTask.value.dragInfo === undefined) {
+		return
+	}
+
+	draggedTask.value.target.scheduled_at = draggedTask.value.dragInfo.date.startOf('day').plus({
+		minutes: draggedTask.value.dragInfo.top / (column.value?.offsetHeight ?? 1) * 24 * 60
+	})
+	
+	emit('edit-task', draggedTask.value.target)
+
+	draggedTask.value = undefined
 }
 
 </script>
@@ -119,7 +183,7 @@ function dragDrop(_: DragEvent) {
 		</div>
 
 		<div id="col" ref="column" @mousedown="mousedown" @mouseup="mouseup" @mousemove="mouseover" @dragover="dragover"
-			@dragend="dragDrop" class="relative flex flex-col grow items-center select-none">
+			@dragend="dragDrop" @drop="dragDrop" class="relative flex flex-col grow items-center select-none">
 			<CalendarSeperator v-for="sep in seperators" :seperator="sep">
 				<hr class="w-full border-muted">
 			</CalendarSeperator>
@@ -134,9 +198,12 @@ function dragDrop(_: DragEvent) {
 			<div v-if="draggedEvent !== undefined && draggedEvent.date.equals(props.day)"
 				class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
 				:style="{ height: `${draggedEvent.height}px`, top: `${draggedEvent.top}px` }"></div>
+			<div v-if="draggedTask !== undefined && draggedTask.dragInfo !== undefined && draggedTask.dragInfo.date.equals(props.day)"
+				class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
+				:style="{ height: `${draggedTask.dragInfo.height}px`, top: `${draggedTask.dragInfo.top}px` }"></div>
 		</div>
 	</div>
 </template>
 
-
+<style scoped></style>
 <style scoped></style>

@@ -8,7 +8,8 @@ export class Event {
 		public title: string,
 		public from: DateTime,
 		public to: DateTime,
-		public description: string
+		public description: string,
+		public task: Task | undefined = undefined
 	) { }
 
 
@@ -142,6 +143,10 @@ export class Event {
 			target: this,
 			offset: offset
 		}
+	}
+
+	isTask() {
+		return this.task !== undefined
 	}
 
 }

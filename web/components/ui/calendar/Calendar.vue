@@ -7,7 +7,9 @@ import { DateTime } from 'luxon';
 import EventFormModal from '../EventFormModal.vue';
 
 const events = defineModel<Event[]>('events', { required: true })
+const tasks = defineModel<Task[]>('tasks', { required: true })
 const date = defineModel<DateTime>('date', { required: true })
+const draggedTask = defineModel<DraggedTask | undefined>('draggedTask', { required: true })
 const draggedEvent = ref<DraggedEvent | undefined>()
 const createInput = ref<Partial<SimpleEvent>>({})
 const createModalOpened = ref(false)
@@ -34,10 +36,17 @@ function pushEventWithCollisionUpdate(array: CollissionWrapper[], event: Event, 
 	}
 }
 
+const taskEvents = computed<Event[]>(() => {
+	return tasks.value
+		.filter(task => task.isScheduled())
+		.map(task => task.toEvent())
+})
+
 const days = computed<Day[]>(() => {
 	return [1, 2, 3, 4, 5, 6, 7].map((i) => {
+		const eventsToDisplay = [...taskEvents.value, ...events.value]
 		const currentDate = date.value.startOf('week').plus({ day: i - 1 })
-		const filteredEvents = events.value.filter(
+		const filteredEvents = eventsToDisplay.filter(
 			(event) => event.from >= currentDate.startOf('day') && event.to <= currentDate.endOf('day')
 		)
 
@@ -81,6 +90,7 @@ const emits = defineEmits<{
 	(e: 'create', event: Event): void
 	(e: 'edit', event: Event): void
 	(e: 'delete', event: Event): void
+	(e: 'edit-task', task: Task): void
 }>()
 
 const hour = (num: number) => {
@@ -149,7 +159,9 @@ function deleteEvent() {
 }
 
 function moveEvent(event: Event) {
-	emits('edit', event)
+	if (event.task !== undefined) {
+		emits('edit-task', event.task)
+	} else emits('edit', event)
 }
 
 </script>
@@ -161,7 +173,8 @@ function moveEvent(event: Event) {
 		<EventFormModal action="edit" @submnitted="event => edit(event)" :input="editInput"
 			v-model:open="editModalOpened" />
 
-		<UModal v-model:open="deleteModalOpened" title="Delete Event" description="Are you sure you want to delete this event?">
+		<UModal v-model:open="deleteModalOpened" title="Delete Event"
+			description="Are you sure you want to delete this event?">
 			<template #footer>
 				<UButton variant="solid" @click="deleteEvent">
 					Delete
@@ -176,8 +189,8 @@ function moveEvent(event: Event) {
 			<CalendarHeader :seperators="seperators" />
 
 			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
-				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="openCreateModal"
-				@edit="openEditModal" @delete="openDeleteModal" @moved="moveEvent" />
+				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="openCreateModal" @edit="openEditModal"
+				@delete="openDeleteModal" @moved="moveEvent" @edit-task="(task) => emits('edit-task', task)" v-model:dragged-task="draggedTask" />
 		</div>
 
 	</div>
