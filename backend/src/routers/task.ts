@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
     res.status(201).json(returnedTasks[0]);
 });
 
-router.put('/', (req, res) => {
+router.put('/:id', async (req, res) => {
 
     const id = parseInt(req.params['id']);
     const updatedTask: Partial<typeof task.$inferSelect> = req.body
@@ -63,7 +63,7 @@ router.put('/', (req, res) => {
         res.status(400).send({ error: 'Needs an id' });
         return;
     }
-    db.update(task).set(updatedTask).where(eq(task.id, id))
+    await db.update(task).set(updatedTask).where(eq(task.id, id))
 
     res.status(200).json(updatedTask);
 });

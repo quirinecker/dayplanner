@@ -43,6 +43,12 @@ async function deleteTask(id: number) {
 	await refresh()
 }
 
+async function putTask(task: Task) {
+	console.log('editing task')
+	await axios.put(`/tasks/${task.id}`, task)
+	await refresh()
+}
+
 function scheduleTask(task: Task) {
 	draggedTask.value = { target: task, dragInfo: undefined }
 }
@@ -52,9 +58,9 @@ function scheduleTask(task: Task) {
 <template>
 	<div class="h-screen w-screen p-4 flex flex-row gap-5">
 		<Sidebar v-if="tasks !== null" v-model:tasks="tasks" v-model:date="date" @create-task="postTask"
-			@delete-task="deleteTask" @schedule-task="scheduleTask"/>
+			@delete-task="deleteTask" @schedule-task="scheduleTask" @edit-task="putTask"/>
 		<MainContent v-if="events !== null" v-model:events="events" v-model:date="date"
-			v-model:dragged-task="draggedTask" v-model:tasks="tasks" @create-event="postEvent" />
+			v-model:dragged-task="draggedTask" v-model:tasks="tasks" @create-event="postEvent" @edit-task="putTask"/>
 	</div>
 </template>
 

@@ -90,6 +90,7 @@ const emits = defineEmits<{
 	(e: 'create', event: Event): void
 	(e: 'edit', event: Event): void
 	(e: 'delete', event: Event): void
+	(e: 'edit-task', task: Task): void
 }>()
 
 const hour = (num: number) => {
@@ -187,7 +188,7 @@ function moveEvent(event: Event) {
 
 			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
 				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="openCreateModal" @edit="openEditModal"
-				@delete="openDeleteModal" @moved="moveEvent" v-model:dragged-task="draggedTask" />
+				@delete="openDeleteModal" @moved="moveEvent" @edit-task="(task) => emits('edit-task', task)" v-model:dragged-task="draggedTask" />
 		</div>
 
 	</div>

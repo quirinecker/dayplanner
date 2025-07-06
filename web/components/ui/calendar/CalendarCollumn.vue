@@ -18,6 +18,7 @@ const emit = defineEmits<{
 	(e: 'edit', event: Event): void
 	(e: 'moved', event: Event): void
 	(e: 'delete', event: Event): void
+	(e: 'edit-task', task: Task): void
 }>()
 
 const isDragging = ref(false)
@@ -164,6 +165,8 @@ function updateTaskWithDraggedTask() {
 	draggedTask.value.target.scheduled_at = draggedTask.value.dragInfo.date.startOf('day').plus({
 		minutes: draggedTask.value.dragInfo.top / (column.value?.offsetHeight ?? 1) * 24 * 60
 	})
+	
+	emit('edit-task', draggedTask.value.target)
 
 	draggedTask.value = undefined
 }
