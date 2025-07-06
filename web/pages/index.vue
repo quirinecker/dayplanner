@@ -27,19 +27,19 @@ onMounted(() => {
 
 async function postEvent(event: Event) {
 	console.log('posting Event')
-	await axios.post('/event', event.toSerializable())
+	await axios.post('/events', event.toSerializable())
 }
 
 async function postTask(task: Task) {
 	console.log('posting Task')
-	const createdTask = await axios.post<SerializableTask>('/task', task)
+	const createdTask = await axios.post<SerializableTask>('/tasks', task)
 	console.log(createdTask)
 	task.id = createdTask.data.id
 }
 
 async function deleteTask(id: number) {
 	console.log('deleting Task')
-	await axios.delete(`/task/${id}`)
+	await axios.delete(`/tasks/${id}`)
 	await refresh()
 }
 

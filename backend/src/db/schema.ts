@@ -17,6 +17,7 @@ export const task = sqliteTable('task', {
 	title: text().notNull(),
 	description: text().notNull(),
 	done: int().notNull(),
+	scheduled_at: text(),
 	estimated_time: int().notNull(),
 	due_date: text(),
 	created_at: text().notNull().default(new Date().toISOString()),
