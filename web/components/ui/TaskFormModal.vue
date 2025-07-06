@@ -89,6 +89,7 @@ function cancel() {
 <template>
 	<UModal v-model:open="open" :title="modalTitle" :description="modalDescription">
 		<template #body>
+			scheduled at: {{ props.input.scheduled_at }}
 			<div class="flex flex-col gap-2">
 				<UInput type="text" placeholder="Name" v-model="titleField" required />
 				<UInput type="number" class="grow" placeholder="estimated time in hours" v-model="estimatedTimeField"

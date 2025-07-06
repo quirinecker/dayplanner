@@ -1,4 +1,5 @@
 import { DateTime } from "luxon"
+import { Event } from "./event"
 
 export class Task {
 	constructor(
@@ -42,6 +43,18 @@ export class Task {
 
 	isScheduled() {
 		return this.scheduled_at !== undefined
+	}
+
+	toEvent(): Event {
+		const scheduledAt = this.scheduled_at ?? DateTime.now()
+		return new Event(
+			this.id,
+			this.title,
+			scheduledAt,
+			scheduledAt.plus({ minutes: this.estimated_time }),
+			this.description,
+			this
+		)
 	}
 }
 

@@ -54,7 +54,7 @@ function scheduleTask(task: Task) {
 		<Sidebar v-if="tasks !== null" v-model:tasks="tasks" v-model:date="date" @create-task="postTask"
 			@delete-task="deleteTask" @schedule-task="scheduleTask"/>
 		<MainContent v-if="events !== null" v-model:events="events" v-model:date="date"
-			v-model:dragged-task="draggedTask" @create-event="postEvent" />
+			v-model:dragged-task="draggedTask" v-model:tasks="tasks" @create-event="postEvent" />
 	</div>
 </template>
 

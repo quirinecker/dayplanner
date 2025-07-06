@@ -7,6 +7,7 @@ import { DateTime } from 'luxon';
 import EventFormModal from '../EventFormModal.vue';
 
 const events = defineModel<Event[]>('events', { required: true })
+const tasks = defineModel<Task[]>('tasks', { required: true })
 const date = defineModel<DateTime>('date', { required: true })
 const draggedTask = defineModel<DraggedTask | undefined>('draggedTask', { required: true })
 const draggedEvent = ref<DraggedEvent | undefined>()
@@ -35,10 +36,17 @@ function pushEventWithCollisionUpdate(array: CollissionWrapper[], event: Event, 
 	}
 }
 
+const taskEvents = computed<Event[]>(() => {
+	return tasks.value
+		.filter(task => task.isScheduled())
+		.map(task => task.toEvent())
+})
+
 const days = computed<Day[]>(() => {
 	return [1, 2, 3, 4, 5, 6, 7].map((i) => {
+		const eventsToDisplay = [...taskEvents.value, ...events.value]
 		const currentDate = date.value.startOf('week').plus({ day: i - 1 })
-		const filteredEvents = events.value.filter(
+		const filteredEvents = eventsToDisplay.filter(
 			(event) => event.from >= currentDate.startOf('day') && event.to <= currentDate.endOf('day')
 		)
 

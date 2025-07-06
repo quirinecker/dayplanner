@@ -84,6 +84,7 @@ function eventMove(mouseEvent: MouseEvent, event: Event) {
 }
 
 function dragover(e: DragEvent) {
+	e.preventDefault()
 	drawDraggedEvent(e)
 	drawDraggedTask(e)
 }
@@ -120,7 +121,27 @@ function drawDraggedEvent(event: DragEvent) {
 }
 
 function dragDrop(_: DragEvent) {
-	draggedEvent.value?.target.updateWithDraggedEvent(draggedEvent.value, column.value?.offsetHeight ?? 0)
+	console.log('dropping')
+	if (draggedEvent.value !== undefined) {
+		updateEventWithDraggedEvent()
+	}
+
+	if (draggedTask.value !== undefined) {
+		console.log('dropping task')
+		updateTaskWithDraggedTask()
+	}
+}
+
+function updateEventWithDraggedEvent() {
+	if (draggedEvent.value == undefined) return
+
+	if (draggedEvent.value.target.task !== undefined) {
+		draggedEvent.value.target.task.scheduled_at = draggedEvent.value.date.startOf('day').plus({
+			minutes: draggedEvent.value.top / (column.value?.offsetHeight ?? 1) * 24 * 60
+		})
+	} else {
+		draggedEvent.value?.target.updateWithDraggedEvent(draggedEvent.value, column.value?.offsetHeight ?? 0)
+	}
 
 	if (draggedEvent.value === undefined) {
 		draggedEvent.value = undefined
@@ -129,6 +150,22 @@ function dragDrop(_: DragEvent) {
 
 	emit('moved', draggedEvent.value.target)
 	draggedEvent.value = undefined
+}
+
+function updateTaskWithDraggedTask() {
+	if (draggedTask.value === undefined) {
+		return
+	}
+
+	if (draggedTask.value.dragInfo === undefined) {
+		return
+	}
+
+	draggedTask.value.target.scheduled_at = draggedTask.value.dragInfo.date.startOf('day').plus({
+		minutes: draggedTask.value.dragInfo.top / (column.value?.offsetHeight ?? 1) * 24 * 60
+	})
+
+	draggedTask.value = undefined
 }
 
 </script>
@@ -143,7 +180,7 @@ function dragDrop(_: DragEvent) {
 		</div>
 
 		<div id="col" ref="column" @mousedown="mousedown" @mouseup="mouseup" @mousemove="mouseover" @dragover="dragover"
-			@dragend="dragDrop" class="relative flex flex-col grow items-center select-none">
+			@dragend="dragDrop" @drop="dragDrop" class="relative flex flex-col grow items-center select-none">
 			<CalendarSeperator v-for="sep in seperators" :seperator="sep">
 				<hr class="w-full border-muted">
 			</CalendarSeperator>
@@ -165,5 +202,5 @@ function dragDrop(_: DragEvent) {
 	</div>
 </template>
 
-
+<style scoped></style>
 <style scoped></style>
