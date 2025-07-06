@@ -8,6 +8,7 @@ import { Event, type SerializableEvent } from '~/utils/event';
 const date = ref<DateTime>(DateTime.now())
 const events = ref<Event[]>([])
 const tasks = ref<Task[]>([])
+const draggedTask = ref<DraggedTask | undefined>(undefined)
 
 const { data: eventsResponse } = await useAsyncData<SerializableEvent[]>(
 	'events',
@@ -42,13 +43,18 @@ async function deleteTask(id: number) {
 	await refresh()
 }
 
+function scheduleTask(task: Task) {
+	draggedTask.value = { target: task, dragInfo: undefined }
+}
+
 </script>
 
 <template>
 	<div class="h-screen w-screen p-4 flex flex-row gap-5">
 		<Sidebar v-if="tasks !== null" v-model:tasks="tasks" v-model:date="date" @create-task="postTask"
-			@delete-task="deleteTask" />
-		<MainContent v-if="events !== null" v-model:events="events" v-model:date="date" @create-event="postEvent" />
+			@delete-task="deleteTask" @schedule-task="scheduleTask"/>
+		<MainContent v-if="events !== null" v-model:events="events" v-model:date="date"
+			v-model:dragged-task="draggedTask" @create-event="postEvent" />
 	</div>
 </template>
 

@@ -25,6 +25,7 @@ const startY = ref(0)
 const endY = ref(0)
 const column = useTemplateRef('column')
 const draggedEvent = defineModel<DraggedEvent | undefined>('draggedEvent')
+const draggedTask = defineModel<DraggedTask | undefined>('draggedTask')
 
 const height = computed(() => {
 	return Math.abs(endY.value - startY.value)
@@ -83,6 +84,29 @@ function eventMove(mouseEvent: MouseEvent, event: Event) {
 }
 
 function dragover(e: DragEvent) {
+	drawDraggedEvent(e)
+	drawDraggedTask(e)
+}
+
+function drawDraggedTask(event: DragEvent) {
+	if (draggedTask.value === undefined) {
+		return;
+	}
+
+	if (draggedTask.value.dragInfo === undefined) {
+		draggedTask.value.dragInfo = {
+			height: (draggedTask.value.target.estimated_time / 60 / 24) * (column.value?.offsetHeight ?? 0),
+			top: absoluteToRelativeY(event.clientY),
+			date: props.day
+		}
+		drawDraggedTask(event)
+	}
+
+	draggedTask.value.dragInfo.top = absoluteToRelativeY(event.clientY)
+	draggedTask.value.dragInfo.date = props.day
+}
+
+function drawDraggedEvent(event: DragEvent) {
 	if (draggedEvent.value === undefined) {
 		return
 	}
@@ -92,13 +116,13 @@ function dragover(e: DragEvent) {
 	}
 
 
-	draggedEvent.value.top = absoluteToRelativeY(e.clientY) - draggedEvent.value.offset
+	draggedEvent.value.top = absoluteToRelativeY(event.clientY) - draggedEvent.value.offset
 }
 
 function dragDrop(_: DragEvent) {
 	draggedEvent.value?.target.updateWithDraggedEvent(draggedEvent.value, column.value?.offsetHeight ?? 0)
 
-	if (draggedEvent.value === undefined){
+	if (draggedEvent.value === undefined) {
 		draggedEvent.value = undefined
 		return
 	}
@@ -134,6 +158,9 @@ function dragDrop(_: DragEvent) {
 			<div v-if="draggedEvent !== undefined && draggedEvent.date.equals(props.day)"
 				class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
 				:style="{ height: `${draggedEvent.height}px`, top: `${draggedEvent.top}px` }"></div>
+			<div v-if="draggedTask !== undefined && draggedTask.dragInfo !== undefined && draggedTask.dragInfo.date.equals(props.day)"
+				class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
+				:style="{ height: `${draggedTask.dragInfo.height}px`, top: `${draggedTask.dragInfo.top}px` }"></div>
 		</div>
 	</div>
 </template>

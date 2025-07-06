@@ -7,7 +7,8 @@ export class Task {
 		public description: string,
 		public done: boolean,
 		public estimated_time: number,
-		public due_date: DateTime | undefined
+		public due_date: DateTime | undefined,
+		public scheduled_at: DateTime | undefined
 	) { }
 
 	static fromSimpleTask(simpleTask: SimpleTask) {
@@ -17,7 +18,8 @@ export class Task {
 			simpleTask.description,
 			simpleTask.done,
 			simpleTask.estimated_time,
-			simpleTask.due_date
+			simpleTask.due_date,
+			simpleTask.scheduled_at
 		)
 	}
 
@@ -29,8 +31,17 @@ export class Task {
 			serializableTask.description,
 			serializableTask.done,
 			serializableTask.estimated_time,
-			DateTime.now()
+			stringToDate(serializableTask.due_date),
+			stringToDate(serializableTask.scheduled_at),
 		)
+	}
+
+	isPersistent() {
+		return this.id !== undefined
+	}
+
+	isScheduled() {
+		return this.scheduled_at !== undefined
 	}
 }
 
@@ -40,6 +51,7 @@ export type SimpleTask = {
 	description: string
 	done: boolean
 	estimated_time: number
+	scheduled_at: DateTime | undefined
 	due_date: DateTime | undefined
 }
 
@@ -50,7 +62,24 @@ export type SerializableTask = {
 	done: boolean
 	estimated_time: number
 	due_date: string | undefined
+	scheduled_at: string | undefined
 	created_at: string
 	updated_at: string
 	userid: string
+}
+
+export type DraggedTask = {
+	target: Task,
+	dragInfo: {
+		top: number,
+		date: DateTime
+		height: number
+	} | undefined
+}
+
+function stringToDate(date: string | undefined) {
+	if (date === undefined) {
+		return undefined
+	}
+	return DateTime.fromISO(date)
 }

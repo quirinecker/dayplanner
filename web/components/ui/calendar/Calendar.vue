@@ -8,6 +8,7 @@ import EventFormModal from '../EventFormModal.vue';
 
 const events = defineModel<Event[]>('events', { required: true })
 const date = defineModel<DateTime>('date', { required: true })
+const draggedTask = defineModel<DraggedTask | undefined>('draggedTask', { required: true })
 const draggedEvent = ref<DraggedEvent | undefined>()
 const createInput = ref<Partial<SimpleEvent>>({})
 const createModalOpened = ref(false)
@@ -161,7 +162,8 @@ function moveEvent(event: Event) {
 		<EventFormModal action="edit" @submnitted="event => edit(event)" :input="editInput"
 			v-model:open="editModalOpened" />
 
-		<UModal v-model:open="deleteModalOpened" title="Delete Event" description="Are you sure you want to delete this event?">
+		<UModal v-model:open="deleteModalOpened" title="Delete Event"
+			description="Are you sure you want to delete this event?">
 			<template #footer>
 				<UButton variant="solid" @click="deleteEvent">
 					Delete
@@ -176,8 +178,8 @@ function moveEvent(event: Event) {
 			<CalendarHeader :seperators="seperators" />
 
 			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
-				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="openCreateModal"
-				@edit="openEditModal" @delete="openDeleteModal" @moved="moveEvent" />
+				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="openCreateModal" @edit="openEditModal"
+				@delete="openDeleteModal" @moved="moveEvent" v-model:dragged-task="draggedTask" />
 		</div>
 
 	</div>

@@ -7,6 +7,7 @@ import { DateTime } from 'luxon';
 
 const colorMode = useColorMode();
 const toast = useToast()
+const instance = getCurrentInstance()
 
 const currentTheme = ref<'dark' | 'system' | 'light'>(colorMode.preference as 'dark' | 'system' | 'light');
 const showTaskCreateModal = ref(false);
@@ -20,6 +21,7 @@ const emits = defineEmits<{
 	(e: 'createTask', task: Task): void
 	(e: 'deleteTask', id: number): void
 	(e: 'editTask', task: Task): void
+	(e: 'scheduleTask', task: Task): void
 }>()
 
 const isLight = computed(() => currentTheme.value === 'light');
@@ -96,6 +98,7 @@ function deleteTask(task: Task) {
 
 	emits('deleteTask', task.id)
 }
+
 function editTask(task: Task) {
 	emits('editTask', task)
 }
@@ -108,6 +111,10 @@ function openTaskFormModal(task: Partial<Task>) {
 function openTaskEditModal(task: Task) {
 	taskFormModalInput.value = task
 	showTaskEditModal.value = true
+}
+
+function scheduleTask(task: Task) {
+	emits('scheduleTask', task)
 }
 
 </script>
@@ -129,7 +136,8 @@ function openTaskEditModal(task: Task) {
 					<Title1>Tasks</Title1>
 					<div class="flex gap-2 flex-col">
 						<ListItem v-for="task in todoTasks">
-							<div class="flex w-full gap-4 items-center">
+							<div class="flex w-full gap-4 items-center" @dragstart="scheduleTask(task)"
+								draggable="true">
 								<span
 									class="grow overflow-scroll py-3 overflow-shadow flex flex-row gap-2 items-center">
 									<UCheckbox v-model="task.done" @change="() => editTask(task)" />{{ task.title }}
@@ -144,7 +152,8 @@ function openTaskEditModal(task: Task) {
 						</ListItem>
 						<USeparator label="Done" v-if="todoTasks.length !== 0" />
 						<ListItem v-for="task in doneTasks">
-							<div class="flex w-full gap-4 items-center">
+							<div class="flex w-full gap-4 items-center" @dragstart="scheduleTask(task)"
+								draggable="true">
 								<span
 									class="grow overflow-scroll py-3 overflow-shadow flex flex-row gap-2 items-center">
 									<UCheckbox v-model="task.done" @change="() => editTask(task)" />{{ task.title }}

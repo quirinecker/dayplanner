@@ -5,7 +5,7 @@ import * as z from 'zod';
 const open = defineModel<boolean>('open', { required: true })
 
 const emit = defineEmits<{
-	(e: 'submnitted', event: SimpleTask): void
+	(e: 'submnitted', event: Task): void
 	(e: 'canceled'): void
 }>()
 
@@ -63,14 +63,15 @@ function submit() {
 		return
 	}
 
-	emit('submnitted', {
+	emit('submnitted', Task.fromSimpleTask({
 		id: props.input.id,
 		title: form.data.title,
 		done: props.input.done ?? false,
 		description: form.data.description,
 		estimated_time: form.data.estimated_time,
-		due_date: DateTime.fromISO(form.data.due_date)
-	})
+		due_date: DateTime.fromISO(form.data.due_date),
+		scheduled_at: props.input.scheduled_at
+	}))
 	open.value = false
 }
 
