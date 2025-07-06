@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { UFormField } from '#components';
 import { DateTime } from 'luxon';
 import * as z from 'zod';
 
@@ -21,6 +22,8 @@ const descriptionField = ref('')
 const estimatedTimeField = ref(0)
 const dueTimeField = ref('')
 const dueDateField = ref('')
+const scheduledAtDateField = ref('')
+const scheduledAtTimeField = ref('')
 
 const modalTitle = computed(() => {
 	return props.action === 'create' ? 'Create Task' : 'Edit Task'
@@ -36,6 +39,8 @@ watchEffect(() => {
 	estimatedTimeField.value = (((props.input.estimated_time) ?? 0) / 60)
 	dueDateField.value = props.input.due_date?.toFormat('yyyy-MM-dd') ?? ''
 	dueTimeField.value = props.input.due_date?.toFormat('HH:mm') ?? ''
+	scheduledAtDateField.value = props.input.scheduled_at?.toFormat('yyyy-MM-dd') ?? ''
+	scheduledAtTimeField.value = props.input.scheduled_at?.toFormat('HH:mm') ?? ''
 })
 
 const formSchema = z.object({
@@ -89,18 +94,31 @@ function cancel() {
 <template>
 	<UModal v-model:open="open" :title="modalTitle" :description="modalDescription">
 		<template #body>
-			scheduled at: {{ props.input.scheduled_at }}
 			<div class="flex flex-col gap-2">
-				<UInput type="text" placeholder="Name" v-model="titleField" required />
-				<UInput type="number" class="grow" placeholder="estimated time in hours" v-model="estimatedTimeField"
-					icon="mdi:stopwatch-outline" required />
 				<div class="flex flex-row gap-2">
+					<UFormField label="Title">
+					<UInput type="text" class="w-full" placeholder="Name" v-model="titleField" required />
+					</UFormField>
+					<UFormField label="Estimated time in hours">
+					<UInput type="number" class="grow" placeholder="estimated time in hours" v-model="estimatedTimeField"
+						icon="mdi:stopwatch-outline" required />
+					</UFormField>
+				</div>
+				<UFormField label="Deadline" :ui="{ container: 'flex flex-row gap-2'}">
 					<UInput type="date" class="grow" placeholder="due data e.g 2025-06-16" v-model="dueDateField"
 						icon="i-lucide-calendar" required />
 					<UInput class="grow" placeholder="due time e.g 15:34" v-model="dueTimeField" icon="i-lucide-clock"
 						required />
-				</div>
-				<UTextarea type="text" placeholder="Description" v-model="descriptionField" required />
+				</UFormField>
+				<UFormField label="Scheduled at" :ui="{ container: 'flex flex-row gap-2'}" v-if="props.input.scheduled_at">
+					<UInput type="date" class="grow" placeholder="schedule data e.g 2025-06-16" v-model="scheduledAtDateField"
+						icon="i-lucide-calendar" required />
+					<UInput class="grow" placeholder="schedule time e.g 15:34" v-model="scheduledAtTimeField" icon="i-lucide-clock"
+						required />
+				</UFormField>
+				<UFormField label="Description">
+					<UTextarea type="text" class="w-full" placeholder="Description" v-model="descriptionField" required />
+				</UFormField>
 			</div>
 		</template>
 		<template #footer>
