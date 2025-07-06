@@ -159,7 +159,9 @@ function deleteEvent() {
 }
 
 function moveEvent(event: Event) {
-	emits('edit', event)
+	if (event.task !== undefined) {
+		emits('edit-task', event.task)
+	} else emits('edit', event)
 }
 
 </script>

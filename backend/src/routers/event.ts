@@ -41,7 +41,7 @@ router.post('/', async (req, res) => {
     res.status(201).json(returnedEvent);
 });
 
-router.put('/', (req, res) => {
+router.put('/:id', async (req, res) => {
 
     const id = parseInt(req.params['id']);
     const updatedEvent: Partial<typeof event.$inferSelect> = req.body
@@ -50,7 +50,7 @@ router.put('/', (req, res) => {
         res.status(400).send({ error: 'Needs an id' });
         return;
     }
-    db.update(event).set(updatedEvent).where(eq(event.id, id))
+    await db.update(event).set(updatedEvent).where(eq(event.id, id))
 
     res.status(200).json(updatedEvent);
 });
