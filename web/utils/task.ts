@@ -92,6 +92,7 @@ export type SerializableTask = {
 
 export type DraggedTask = {
 	target: Task,
+	active: boolean,
 	dragInfo: {
 		top: number,
 		date: DateTime
@@ -100,7 +101,7 @@ export type DraggedTask = {
 }
 
 function stringToDate(date: string | undefined) {
-	if (date === undefined) {
+	if (date === undefined || date === null) {
 		return undefined
 	}
 	return DateTime.fromISO(date)

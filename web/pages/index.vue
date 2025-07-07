@@ -90,13 +90,25 @@ async function putEvent(event: Event) {
 
 async function putTask(task: Task) {
 	console.log('editing task')
-	await axios.put(`/tasks/${task.id}`, task, await getAuthHeader())
+	console.log(task.scheduled_at)
+	await axios.put(
+		`/tasks/${task.id}`,
+		{...task, scheduled_at: task.scheduled_at ?? null},
+		await getAuthHeader()
+	)
 	await refreshTask()
 	$socket.emit('change')
 }
 
 function scheduleTask(task: Task) {
-	draggedTask.value = { target: task, dragInfo: undefined }
+	draggedTask.value = { target: task, dragInfo: undefined, active: false }
+}
+
+function dismissSchedule() {
+	console.log(draggedTask.value?.active)
+	if (draggedTask.value !== undefined && draggedTask.value.active) {
+		draggedTask.value.active = false
+	}
 }
 
 </script>
@@ -104,7 +116,8 @@ function scheduleTask(task: Task) {
 <template>
 	<div class="h-screen w-screen p-4 flex flex-row gap-5">
 		<Sidebar v-if="tasks !== null" v-model:tasks="tasks" v-model:date="date" @create-task="postTask"
-			@delete-task="deleteTask" @schedule-task="scheduleTask" @edit-task="putTask" />
+			@delete-task="deleteTask" @schedule-task="scheduleTask" @edit-task="putTask"
+			@dismiss-schedule="dismissSchedule" />
 		<MainContent v-if="events !== null" v-model:events="events" v-model:date="date"
 			v-model:dragged-task="draggedTask" v-model:tasks="tasks" @create-event="postEvent" @edit-task="putTask"
 			@edit-event="putEvent" @delete-event="deleteEvent" @delete-task="deleteTask" />

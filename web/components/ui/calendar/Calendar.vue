@@ -21,6 +21,7 @@ const editTaskModalOpened = ref(false)
 const editTaskContext = ref<Task>()
 const taskFormModalInput = ref<Partial<Task>>({})
 const deleteContext = ref<{ event: Event }>()
+const taskDraggingActive = ref(true)
 
 type Day = {
 	date: DateTime
@@ -212,10 +213,24 @@ function moveEvent(event: Event) {
 	} else emits('edit', event)
 }
 
+function dragEnter(_: DragEvent) {
+	if (draggedTask.value !== undefined) {
+		draggedTask.value.active = true
+	}
+}
+
+function rawEdit(event: Event) {
+	if (event.task === undefined) {
+		return
+	}
+
+	emits('edit-task', event.task)
+}
+
 </script>
 
 <template>
-	<div class="w-full h-full flex flex-col">
+	<div class="w-full h-full flex flex-col" @dragenter="dragEnter">
 		<EventFormModal action="create" @submnitted="event => create(event)" :input="createInput"
 			v-model:open="createModalOpened" />
 		<EventFormModal action="edit" @submnitted="event => edit(event)" :input="editInput"
@@ -239,9 +254,9 @@ function moveEvent(event: Event) {
 			<CalendarHeader :seperators="seperators" />
 
 			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
-				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="openCreateModal" @edit="openEditModal"
-				@delete="openDeleteModal" @moved="moveEvent" @edit-task="(task) => emits('edit-task', task)"
-				v-model:dragged-task="draggedTask" />
+				:task-dragging-active="taskDraggingActive" :date="date" v-model:draggedEvent="draggedEvent"
+				@quick-create="openCreateModal" @edit="openEditModal" @delete="openDeleteModal" @moved="moveEvent"
+				@edit-task="(task) => emits('edit-task', task)" @raw-edit="(event) => rawEdit(event)" v-model:dragged-task="draggedTask" />
 		</div>
 
 	</div>

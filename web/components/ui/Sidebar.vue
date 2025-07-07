@@ -27,6 +27,7 @@ const emits = defineEmits<{
 	(e: 'deleteTask', id: number): void
 	(e: 'editTask', task: Task): void
 	(e: 'scheduleTask', task: Task): void
+	(e: 'dismissSchedule'): void
 }>()
 
 const isLight = computed(() => currentTheme.value === 'light');
@@ -140,6 +141,10 @@ function scheduleTask(task: Task) {
 	emits('scheduleTask', task)
 }
 
+function dismissSchedule() {
+	emits('dismissSchedule')
+}
+
 </script>
 
 <template>
@@ -157,16 +162,16 @@ function scheduleTask(task: Task) {
 			</template>
 		</UModal>
 
-		<div class="flex flex-col h-full w-full gap-5">
+		<div class="flex flex-col h-full w-full gap-5" @dragenter="dismissSchedule">
 			<header class="flex flex-col gap-2">
 				<Title1>Calendar</Title1>
 				<UCalendar v-model="selectedDate" />
 			</header>
-			<div class="flex flex-col grow justify-between">
-				<div class="flex flex-col gap-2">
+			<div class="flex flex-col grow justify-between overflow-x-hidden">
+				<div class="flex flex-col gap-2 h-full overflow-x-hidden">
 					<Title1>Tasks</Title1>
-					<div class="flex gap-2 flex-col">
-						<ListItem v-for="task in todoTasks">
+					<div class="flex gap-2 grow flex-col overflow-auto px-1 py-2">
+						<ListItem v-for="task in todoTasks" :is-scheduled="task.scheduled_at !== undefined">
 							<div class="flex w-full gap-4 items-center" @dragstart="scheduleTask(task)"
 								draggable="true">
 								<span
@@ -182,7 +187,7 @@ function scheduleTask(task: Task) {
 							</div>
 						</ListItem>
 						<USeparator label="Done" v-if="todoTasks.length !== 0" />
-						<ListItem v-for="task in doneTasks">
+						<ListItem v-for="task in doneTasks" :is-scheduled="task.scheduled_at !== undefined">
 							<div class="flex w-full gap-4 items-center" @dragstart="scheduleTask(task)"
 								draggable="true">
 								<span
@@ -192,7 +197,7 @@ function scheduleTask(task: Task) {
 								<div class="flex gap-1">
 									<UButton size="xs" color="neutral" class="flex justify-center"
 										icon="mingcute:pencil-line" @click="() => openTaskEditModal(task)" />
-									<UButton size="xs" color="primary" class="flex justify-center"
+									<UButton size="xs" color="primary" class="flex justify-center shadow-xl"
 										@click="() => openDeleteModal(task)" icon="octicon:trashcan-16" />
 								</div>
 							</div>
