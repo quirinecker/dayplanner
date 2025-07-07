@@ -56,6 +56,15 @@ export class Task {
 			this
 		)
 	}
+
+	updateWithOtherTask(otherTask: Task) {
+		this.title = otherTask.title
+		this.description = otherTask.description
+		this.done = otherTask.done
+		this.estimated_time = otherTask.estimated_time
+		this.due_date = otherTask.due_date
+		this.scheduled_at = otherTask.scheduled_at
+	}
 }
 
 export type SimpleTask = {

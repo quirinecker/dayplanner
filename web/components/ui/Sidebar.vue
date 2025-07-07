@@ -17,6 +17,7 @@ const showTaskEditModal = ref(false);
 const taskFormModalInput = ref<Partial<Task>>({});
 const showDeleteModal = ref(false);
 const deleteContext = ref<Task>();
+const editContext = ref<Task>();
 
 const date = defineModel<DateTime>('date', { required: true })
 const tasks = defineModel<Task[]>('tasks', { required: true })
@@ -115,6 +116,7 @@ function deleteTask() {
 }
 
 function editTask(task: Task) {
+	editContext.value?.updateWithOtherTask(task)
 	emits('editTask', task)
 }
 
@@ -124,6 +126,7 @@ function openTaskFormModal(task: Partial<Task>) {
 }
 
 function openTaskEditModal(task: Task) {
+	editContext.value = task
 	taskFormModalInput.value = task
 	showTaskEditModal.value = true
 }
@@ -215,5 +218,7 @@ function scheduleTask(task: Task) {
 		</div>
 	</UCard>
 </template>
-
+<style scoped></style>
+<style scoped></style>
+<style scoped></style>
 <style scoped></style>

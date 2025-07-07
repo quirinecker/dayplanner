@@ -18,6 +18,7 @@ const createModalOpened = ref(false)
 const editModalOpened = ref(false)
 const deleteModalOpened = ref(false)
 const editTaskModalOpened = ref(false)
+const editTaskContext = ref<Task>()
 const taskFormModalInput = ref<Partial<Task>>({})
 const deleteContext = ref<{ event: Event }>()
 
@@ -143,6 +144,7 @@ function create(simple: SimpleEvent) {
 function openEditModal(event: Event) {
 	if (event.task !== undefined) {
 		taskFormModalInput.value = event.task
+		editTaskContext.value = event.task
 		editTaskModalOpened.value = true
 	} else {
 		editInput.value = event.toSimple()
@@ -159,6 +161,7 @@ function edit(simple: SimpleEvent) {
 
 function editTask(task: Task) {
 	editTaskModalOpened.value = false
+	editTaskContext.value?.updateWithOtherTask(task)
 	emits('edit-task', task)
 }
 
