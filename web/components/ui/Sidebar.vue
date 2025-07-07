@@ -9,6 +9,7 @@ const colorMode = useColorMode();
 const toast = useToast()
 const auth = useAuth()
 const clerk = useClerk()
+const user = useUser()
 
 const currentTheme = ref<'dark' | 'system' | 'light'>(colorMode.preference as 'dark' | 'system' | 'light');
 const showTaskCreateModal = ref(false);
@@ -206,9 +207,8 @@ function scheduleTask(task: Task) {
 					content: 'w-60'
 				}">
 					<UButton variant="ghost" class="flex gap-1 items-center w-full text-text">
-						<UAvatar
-							src="https://avatars.githubusercontent.com/u/33062936?s=400&u=9ee792d29ebcacccdbfb5af0539aab313d6d7185&v=4" />
-						Quirin Ecker
+						<UAvatar :src="user.user.value?.imageUrl" />
+						{{ user.user.value?.username }}
 					</UButton>
 				</UDropdownMenu>
 			</footer>
