@@ -14,6 +14,8 @@ const currentTheme = ref<'dark' | 'system' | 'light'>(colorMode.preference as 'd
 const showTaskCreateModal = ref(false);
 const showTaskEditModal = ref(false);
 const taskFormModalInput = ref<Partial<Task>>({});
+const showDeleteModal = ref(false);
+const deleteContext = ref<Task>();
 
 const date = defineModel<DateTime>('date', { required: true })
 const tasks = defineModel<Task[]>('tasks', { required: true })
@@ -96,17 +98,19 @@ function addTask(task: Task) {
 	console.log(tasks.value)
 	emits('createTask', task)
 }
-function deleteTask(task: Task) {
-	if (task.id === undefined) {
+function deleteTask() {
+	if (deleteContext.value === undefined || deleteContext.value.id === undefined) {
 		toast.add({
 			title: "Task does not exist anymore"
 		})
 		return
 	}
 
-	tasks.value = tasks.value.filter(t => t.id !== task.id)
+	tasks.value = tasks.value.filter(t => t.id !== (deleteContext.value?.id ?? -1))
 
-	emits('deleteTask', task.id)
+	emits('deleteTask', deleteContext.value.id)
+	deleteContext.value = undefined
+	showDeleteModal.value = false
 }
 
 function editTask(task: Task) {
@@ -123,6 +127,11 @@ function openTaskEditModal(task: Task) {
 	showTaskEditModal.value = true
 }
 
+function openDeleteModal(task: Task) {
+	deleteContext.value = task
+	showDeleteModal.value = true
+}
+
 function scheduleTask(task: Task) {
 	emits('scheduleTask', task)
 }
@@ -135,6 +144,14 @@ function scheduleTask(task: Task) {
 			@submnitted="addTask" />
 		<UiTaskFormModal v-model:open="showTaskEditModal" :input="taskFormModalInput" action="edit"
 			@submnitted="editTask" />
+
+		<UModal v-model:open="showDeleteModal" title="Delete Task"
+			description="Are you sure you want to Delete this Task">
+			<template #footer>
+				<UButton color="primary" @click="() => deleteTask()">Delete</UButton>
+				<UButton @click="showDeleteModal = false">Cancel</UButton>
+			</template>
+		</UModal>
 
 		<div class="flex flex-col h-full w-full gap-5">
 			<header class="flex flex-col gap-2">
@@ -156,7 +173,7 @@ function scheduleTask(task: Task) {
 									<UButton size="xs" color="neutral" class="flex justify-center"
 										icon="mingcute:pencil-line" @click="() => openTaskEditModal(task)" />
 									<UButton size="xs" color="primary" class="flex justify-center"
-										icon="octicon:trashcan-16" @click="() => deleteTask(task)" />
+										icon="octicon:trashcan-16" @click="() => openDeleteModal(task)" />
 								</div>
 							</div>
 						</ListItem>
@@ -172,7 +189,7 @@ function scheduleTask(task: Task) {
 									<UButton size="xs" color="neutral" class="flex justify-center"
 										icon="mingcute:pencil-line" @click="() => openTaskEditModal(task)" />
 									<UButton size="xs" color="primary" class="flex justify-center"
-										@click="() => deleteTask(task)" icon="octicon:trashcan-16" />
+										@click="() => openDeleteModal(task)" icon="octicon:trashcan-16" />
 								</div>
 							</div>
 						</ListItem>
