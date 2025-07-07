@@ -14,14 +14,24 @@ const emits = defineEmits<{
 	(e: 'edit-task', task: Task): void
 	(e: 'edit-event', event: Event): void
 	(e: 'delete-event', id: number): void
+	(e: 'delete-task', id: number): void
 }>()
+
+function deleteItem(event: Event) {
+	if (event.task !== undefined) {
+		emits('delete-task', event.task.id ?? -1)
+	} else {
+		emits('delete-event', event.id ?? -1)
+	}
+}
 
 </script>
 
 <template>
 	<UCard class="flex grow" :ui="{ body: 'w-full h-full' }">
-		<Calendar @create="(event) => emits('createEvent', event)" @edit-task="(task) => emits('edit-task', task)" @edit="(event) => emits('edit-event', event)" @delete="(event) => emits('delete-event', event.id ?? -1)" v-model:events="events" v-model:date="date" ,
-			v-model:dragged-task="draggedTask" v-model:tasks="tasks">
+		<Calendar @create="(event) => emits('createEvent', event)" @edit-task="(task) => emits('edit-task', task)"
+			@edit="(event) => emits('edit-event', event)" @delete="deleteItem" v-model:events="events"
+			v-model:date="date" , v-model:dragged-task="draggedTask" v-model:tasks="tasks">
 		</Calendar>
 	</UCard>
 </template>

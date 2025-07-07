@@ -12,11 +12,13 @@ const date = defineModel<DateTime>('date', { required: true })
 const draggedTask = defineModel<DraggedTask | undefined>('draggedTask', { required: true })
 const draggedEvent = ref<DraggedEvent | undefined>()
 const createInput = ref<Partial<SimpleEvent>>({})
-const createModalOpened = ref(false)
 const editInput = ref<Partial<SimpleEvent>>({})
 const editContext = ref<{ event: Event }>()
+const createModalOpened = ref(false)
 const editModalOpened = ref(false)
 const deleteModalOpened = ref(false)
+const editTaskModalOpened = ref(false)
+const taskFormModalInput = ref<Partial<Task>>({})
 const deleteContext = ref<{ event: Event }>()
 
 type Day = {
@@ -86,6 +88,22 @@ const days = computed<Day[]>(() => {
 	})
 })
 
+const deleteTitle = computed(() => {
+	if (deleteContext.value === undefined || deleteContext.value.event.task === undefined) {
+		return 'Delete Event'
+	} else {
+		return 'Delete Task'
+	}
+})
+
+const deleteDescription = computed(() => {
+	if (deleteContext.value === undefined || deleteContext.value.event.task === undefined) {
+		return 'Are you sure you want to delete this event?'
+	} else {
+		return 'Are you sure you want to delete this task?'
+	}
+})
+
 const emits = defineEmits<{
 	(e: 'create', event: Event): void
 	(e: 'edit', event: Event): void
@@ -123,9 +141,14 @@ function create(simple: SimpleEvent) {
 }
 
 function openEditModal(event: Event) {
-	editInput.value = event.toSimple()
-	editContext.value = { event: event }
-	editModalOpened.value = true
+	if (event.task !== undefined) {
+		taskFormModalInput.value = event.task
+		editTaskModalOpened.value = true
+	} else {
+		editInput.value = event.toSimple()
+		editContext.value = { event: event }
+		editModalOpened.value = true
+	}
 }
 
 function edit(simple: SimpleEvent) {
@@ -134,9 +157,23 @@ function edit(simple: SimpleEvent) {
 	emits('edit', editContext.value.event)
 }
 
+function editTask(task: Task) {
+	editTaskModalOpened.value = false
+	emits('edit-task', task)
+}
+
 function openDeleteModal(event: Event) {
 	deleteContext.value = { event: event }
 	deleteModalOpened.value = true
+}
+
+function deleteItem() {
+	if (deleteContext.value === undefined) return
+	if (deleteContext.value.event.task !== undefined) {
+		deleteTask()
+	} else {
+		deleteEvent()
+	}
 }
 
 function deleteEvent() {
@@ -158,6 +195,14 @@ function deleteEvent() {
 	deleteModalOpened.value = false
 }
 
+function deleteTask() {
+	if (deleteContext.value === undefined || deleteContext.value.event.task === undefined) return
+	emits('delete', deleteContext.value.event)
+	tasks.value = tasks.value.filter(t => t.id !== (deleteContext.value?.event.task?.id ?? -1))
+	deleteContext.value = undefined
+	deleteModalOpened.value = false
+}
+
 function moveEvent(event: Event) {
 	if (event.task !== undefined) {
 		emits('edit-task', event.task)
@@ -173,10 +218,12 @@ function moveEvent(event: Event) {
 		<EventFormModal action="edit" @submnitted="event => edit(event)" :input="editInput"
 			v-model:open="editModalOpened" />
 
-		<UModal v-model:open="deleteModalOpened" title="Delete Event"
-			description="Are you sure you want to delete this event?">
+		<UiTaskFormModal v-model:open="editTaskModalOpened" :input="taskFormModalInput" action="edit"
+			@submnitted="editTask" />
+
+		<UModal v-model:open="deleteModalOpened" :title="deleteTitle" :description="deleteDescription">
 			<template #footer>
-				<UButton variant="solid" @click="deleteEvent">
+				<UButton variant="solid" @click="deleteItem">
 					Delete
 				</UButton>
 				<UButton variant="solid" @click="deleteModalOpened = false">
@@ -190,7 +237,8 @@ function moveEvent(event: Event) {
 
 			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
 				:date="date" v-model:draggedEvent="draggedEvent" @quick-create="openCreateModal" @edit="openEditModal"
-				@delete="openDeleteModal" @moved="moveEvent" @edit-task="(task) => emits('edit-task', task)" v-model:dragged-task="draggedTask" />
+				@delete="openDeleteModal" @moved="moveEvent" @edit-task="(task) => emits('edit-task', task)"
+				v-model:dragged-task="draggedTask" />
 		</div>
 
 	</div>
