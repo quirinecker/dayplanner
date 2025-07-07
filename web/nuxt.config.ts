@@ -7,7 +7,7 @@ export default defineNuxtConfig({
 		'@nuxt/eslint',
 		'@nuxt/test-utils',
 		'@nuxt/ui',
-		'@nuxtjs/color-mode'
+		'@nuxtjs/color-mode', '@clerk/nuxt'
 	],
 	app: {
 		baseURL: process.env.BASE_URL,

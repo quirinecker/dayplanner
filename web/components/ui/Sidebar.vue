@@ -7,7 +7,8 @@ import { DateTime } from 'luxon';
 
 const colorMode = useColorMode();
 const toast = useToast()
-const instance = getCurrentInstance()
+const auth = useAuth()
+const clerk = useClerk()
 
 const currentTheme = ref<'dark' | 'system' | 'light'>(colorMode.preference as 'dark' | 'system' | 'light');
 const showTaskCreateModal = ref(false);
@@ -31,10 +32,6 @@ const doneTasks = computed(() => tasks.value.filter(task => task.done))
 const todoTasks = computed(() => tasks.value.filter(task => !task.done))
 
 const dropDownItems = computed<DropdownMenuItem[][]>(() => [
-	[
-		{ label: "Profile", icon: "i-lucide-user" },
-		{ label: "Settings", icon: "i-lucide-settings" }
-	],
 	[
 		{
 			label: "light",
@@ -65,6 +62,15 @@ const dropDownItems = computed<DropdownMenuItem[][]>(() => [
 				currentTheme.value = checked ? 'system' : 'system'
 			}
 		}
+	],
+	[
+		{ label: "Profile", icon: "i-lucide-user", onSelect: () => clerk.value?.openUserProfile() },
+		{
+			label: 'Logout', icon: 'material-symbols:logout', onSelect: () => {
+				auth.signOut.value()
+				navigateTo('/login')
+			}
+		}
 	]
 ])
 
@@ -79,6 +85,10 @@ const selectedDate = computed({
 		}
 		date.value = DateTime.fromISO(value.toString());
 	}
+})
+
+watch(currentTheme, () => {
+	colorMode.preference = currentTheme.value;
 })
 
 function addTask(task: Task) {
