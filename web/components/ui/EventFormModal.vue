@@ -95,18 +95,23 @@ function cancel() {
 	<UModal v-model:open="open" :title="modalTitle" :description="modalDescription">
 		<template #body>
 			<div class="flex flex-col gap-2">
-				<UInput type="text" placeholder="Name" v-model="titleField" required />
-				<div class="flex flex-row gap-2">
+				<UFormField label="Name">
+					<UInput type="text" placeholder="Name" class="w-full" v-model="titleField" required />
+				</UFormField>
+				<UFormField label="Start" :ui="{ container: 'flex flex-row gap-2' }">
 					<UInput class="grow" placeholder="2025-06-16" v-model="fromDateField" icon="i-lucide-calendar"
 						required />
 					<UInput class="grow" placeholder="15:34" v-model="fromTimeField" icon="i-lucide-clock" required />
-				</div>
-				<div class="flex flex-row gap-2">
+				</UFormField>
+				<UFormField label="End" :ui="{ container: 'flex flex-row gap-2' }">
 					<UInput class="grow" placeholder="2025-06-16" v-model="toDateField" icon="i-lucide-calendar"
 						required />
 					<UInput class="grow" placeholder="15:34" v-model="toTimeField" icon="i-lucide-clock" required />
-				</div>
-				<UTextarea type="text" placeholder="Description" v-model="descriptionField" required />
+				</UFormField>
+				<UFormField label="Name">
+					<UTextarea type="text" placeholder="Description" class="w-full" v-model="descriptionField"
+						required />
+				</UFormField>
 			</div>
 		</template>
 		<template #footer>

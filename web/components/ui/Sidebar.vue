@@ -214,7 +214,7 @@ function dismissSchedule() {
 				<UDropdownMenu :items="dropDownItems" size="xl" :ui="{
 					content: 'w-60'
 				}">
-					<UButton variant="ghost" class="flex gap-1 items-center w-full text-text">
+					<UButton variant="ghost" class="flex gap-4 items-center w-full text-text">
 						<UAvatar :src="user.user.value?.imageUrl" />
 						{{ user.user.value?.username }}
 					</UButton>
