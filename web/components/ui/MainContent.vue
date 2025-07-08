@@ -28,7 +28,7 @@ function deleteItem(event: Event) {
 </script>
 
 <template>
-	<UCard class="flex grow" :ui="{ body: 'w-full h-full' }">
+	<UCard class="md:flex grow hidden" :ui="{ body: 'w-full h-full' }">
 		<Calendar @create="(event) => emits('createEvent', event)" @edit-task="(task) => emits('edit-task', task)"
 			@edit="(event) => emits('edit-event', event)" @delete="deleteItem" v-model:events="events"
 			v-model:date="date" , v-model:dragged-task="draggedTask" v-model:tasks="tasks">

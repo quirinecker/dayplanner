@@ -148,7 +148,7 @@ function dismissSchedule() {
 </script>
 
 <template>
-	<UCard class="flex w-64 h-full" :ui="{ body: 'w-full' }">
+	<UCard class="flex md:w-64 w-full h-full" :ui="{ body: 'w-full' }">
 		<UiTaskFormModal v-model:open="showTaskCreateModal" :input="taskFormModalInput" action="create"
 			@submnitted="addTask" />
 		<UiTaskFormModal v-model:open="showTaskEditModal" :input="taskFormModalInput" action="edit"
@@ -163,7 +163,7 @@ function dismissSchedule() {
 		</UModal>
 
 		<div class="flex flex-col h-full w-full gap-5" @dragenter="dismissSchedule">
-			<header class="flex flex-col gap-2">
+			<header class="flex-col gap-2 md:flex hidden">
 				<Title1>Calendar</Title1>
 				<UCalendar v-model="selectedDate" />
 			</header>
@@ -223,7 +223,4 @@ function dismissSchedule() {
 		</div>
 	</UCard>
 </template>
-<style scoped></style>
-<style scoped></style>
-<style scoped></style>
 <style scoped></style>

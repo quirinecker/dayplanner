@@ -256,7 +256,8 @@ function rawEdit(event: Event) {
 			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
 				:task-dragging-active="taskDraggingActive" :date="date" v-model:draggedEvent="draggedEvent"
 				@quick-create="openCreateModal" @edit="openEditModal" @delete="openDeleteModal" @moved="moveEvent"
-				@edit-task="(task) => emits('edit-task', task)" @raw-edit="(event) => rawEdit(event)" v-model:dragged-task="draggedTask" />
+				@edit-task="(task) => emits('edit-task', task)" @raw-edit="(event) => rawEdit(event)"
+				v-model:dragged-task="draggedTask" />
 		</div>
 
 	</div>
