@@ -7,12 +7,17 @@ import { DateTime } from 'luxon';
 
 const colorMode = useColorMode();
 const toast = useToast()
-const instance = getCurrentInstance()
+const auth = useAuth()
+const clerk = useClerk()
+const user = useUser()
 
 const currentTheme = ref<'dark' | 'system' | 'light'>(colorMode.preference as 'dark' | 'system' | 'light');
 const showTaskCreateModal = ref(false);
 const showTaskEditModal = ref(false);
 const taskFormModalInput = ref<Partial<Task>>({});
+const showDeleteModal = ref(false);
+const deleteContext = ref<Task>();
+const editContext = ref<Task>();
 
 const date = defineModel<DateTime>('date', { required: true })
 const tasks = defineModel<Task[]>('tasks', { required: true })
@@ -22,6 +27,7 @@ const emits = defineEmits<{
 	(e: 'deleteTask', id: number): void
 	(e: 'editTask', task: Task): void
 	(e: 'scheduleTask', task: Task): void
+	(e: 'dismissSchedule'): void
 }>()
 
 const isLight = computed(() => currentTheme.value === 'light');
@@ -31,10 +37,6 @@ const doneTasks = computed(() => tasks.value.filter(task => task.done))
 const todoTasks = computed(() => tasks.value.filter(task => !task.done))
 
 const dropDownItems = computed<DropdownMenuItem[][]>(() => [
-	[
-		{ label: "Profile", icon: "i-lucide-user" },
-		{ label: "Settings", icon: "i-lucide-settings" }
-	],
 	[
 		{
 			label: "light",
@@ -65,6 +67,15 @@ const dropDownItems = computed<DropdownMenuItem[][]>(() => [
 				currentTheme.value = checked ? 'system' : 'system'
 			}
 		}
+	],
+	[
+		{ label: "Profile", icon: "i-lucide-user", onSelect: () => clerk.value?.openUserProfile() },
+		{
+			label: 'Logout', icon: 'material-symbols:logout', onSelect: () => {
+				auth.signOut.value()
+				navigateTo('/login')
+			}
+		}
 	]
 ])
 
@@ -81,25 +92,32 @@ const selectedDate = computed({
 	}
 })
 
+watch(currentTheme, () => {
+	colorMode.preference = currentTheme.value;
+})
+
 function addTask(task: Task) {
 	tasks.value.push(task)
 	console.log(tasks.value)
 	emits('createTask', task)
 }
-function deleteTask(task: Task) {
-	if (task.id === undefined) {
+function deleteTask() {
+	if (deleteContext.value === undefined || deleteContext.value.id === undefined) {
 		toast.add({
 			title: "Task does not exist anymore"
 		})
 		return
 	}
 
-	tasks.value = tasks.value.filter(t => t.id !== task.id)
+	tasks.value = tasks.value.filter(t => t.id !== (deleteContext.value?.id ?? -1))
 
-	emits('deleteTask', task.id)
+	emits('deleteTask', deleteContext.value.id)
+	deleteContext.value = undefined
+	showDeleteModal.value = false
 }
 
 function editTask(task: Task) {
+	editContext.value?.updateWithOtherTask(task)
 	emits('editTask', task)
 }
 
@@ -109,33 +127,51 @@ function openTaskFormModal(task: Partial<Task>) {
 }
 
 function openTaskEditModal(task: Task) {
+	editContext.value = task
 	taskFormModalInput.value = task
 	showTaskEditModal.value = true
+}
+
+function openDeleteModal(task: Task) {
+	deleteContext.value = task
+	showDeleteModal.value = true
 }
 
 function scheduleTask(task: Task) {
 	emits('scheduleTask', task)
 }
 
+function dismissSchedule() {
+	emits('dismissSchedule')
+}
+
 </script>
 
 <template>
-	<UCard class="flex w-64 h-full" :ui="{ body: 'w-full' }">
+	<UCard class="flex md:w-64 w-full h-full" :ui="{ body: 'w-full' }">
 		<UiTaskFormModal v-model:open="showTaskCreateModal" :input="taskFormModalInput" action="create"
 			@submnitted="addTask" />
 		<UiTaskFormModal v-model:open="showTaskEditModal" :input="taskFormModalInput" action="edit"
 			@submnitted="editTask" />
 
-		<div class="flex flex-col h-full w-full gap-5">
-			<header class="flex flex-col gap-2">
+		<UModal v-model:open="showDeleteModal" title="Delete Task"
+			description="Are you sure you want to Delete this Task">
+			<template #footer>
+				<UButton color="primary" @click="() => deleteTask()">Delete</UButton>
+				<UButton @click="showDeleteModal = false">Cancel</UButton>
+			</template>
+		</UModal>
+
+		<div class="flex flex-col h-full w-full gap-5" @dragenter="dismissSchedule">
+			<header class="flex-col gap-2 md:flex hidden">
 				<Title1>Calendar</Title1>
 				<UCalendar v-model="selectedDate" />
 			</header>
-			<div class="flex flex-col grow justify-between">
-				<div class="flex flex-col gap-2">
+			<div class="flex flex-col grow justify-between overflow-x-hidden">
+				<div class="flex flex-col gap-2 h-full overflow-x-hidden">
 					<Title1>Tasks</Title1>
-					<div class="flex gap-2 flex-col">
-						<ListItem v-for="task in todoTasks">
+					<div class="flex gap-2 grow flex-col overflow-auto px-1 py-2">
+						<ListItem v-for="task in todoTasks" :is-scheduled="task.scheduled_at !== undefined">
 							<div class="flex w-full gap-4 items-center" @dragstart="scheduleTask(task)"
 								draggable="true">
 								<span
@@ -146,12 +182,12 @@ function scheduleTask(task: Task) {
 									<UButton size="xs" color="neutral" class="flex justify-center"
 										icon="mingcute:pencil-line" @click="() => openTaskEditModal(task)" />
 									<UButton size="xs" color="primary" class="flex justify-center"
-										icon="octicon:trashcan-16" @click="() => deleteTask(task)" />
+										icon="octicon:trashcan-16" @click="() => openDeleteModal(task)" />
 								</div>
 							</div>
 						</ListItem>
 						<USeparator label="Done" v-if="todoTasks.length !== 0" />
-						<ListItem v-for="task in doneTasks">
+						<ListItem v-for="task in doneTasks" :is-scheduled="task.scheduled_at !== undefined">
 							<div class="flex w-full gap-4 items-center" @dragstart="scheduleTask(task)"
 								draggable="true">
 								<span
@@ -161,8 +197,8 @@ function scheduleTask(task: Task) {
 								<div class="flex gap-1">
 									<UButton size="xs" color="neutral" class="flex justify-center"
 										icon="mingcute:pencil-line" @click="() => openTaskEditModal(task)" />
-									<UButton size="xs" color="primary" class="flex justify-center"
-										@click="() => deleteTask(task)" icon="octicon:trashcan-16" />
+									<UButton size="xs" color="primary" class="flex justify-center shadow-xl"
+										@click="() => openDeleteModal(task)" icon="octicon:trashcan-16" />
 								</div>
 							</div>
 						</ListItem>
@@ -178,15 +214,13 @@ function scheduleTask(task: Task) {
 				<UDropdownMenu :items="dropDownItems" size="xl" :ui="{
 					content: 'w-60'
 				}">
-					<UButton variant="ghost" class="flex gap-1 items-center w-full text-text">
-						<UAvatar
-							src="https://avatars.githubusercontent.com/u/33062936?s=400&u=9ee792d29ebcacccdbfb5af0539aab313d6d7185&v=4" />
-						Quirin Ecker
+					<UButton variant="ghost" class="flex gap-4 items-center w-full text-text">
+						<UAvatar :src="user.user.value?.imageUrl" />
+						{{ user.user.value?.username }}
 					</UButton>
 				</UDropdownMenu>
 			</footer>
 		</div>
 	</UCard>
 </template>
-
 <style scoped></style>

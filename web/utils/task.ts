@@ -56,6 +56,15 @@ export class Task {
 			this
 		)
 	}
+
+	updateWithOtherTask(otherTask: Task) {
+		this.title = otherTask.title
+		this.description = otherTask.description
+		this.done = otherTask.done
+		this.estimated_time = otherTask.estimated_time
+		this.due_date = otherTask.due_date
+		this.scheduled_at = otherTask.scheduled_at
+	}
 }
 
 export type SimpleTask = {
@@ -83,6 +92,7 @@ export type SerializableTask = {
 
 export type DraggedTask = {
 	target: Task,
+	active: boolean,
 	dragInfo: {
 		top: number,
 		date: DateTime
@@ -91,7 +101,7 @@ export type DraggedTask = {
 }
 
 function stringToDate(date: string | undefined) {
-	if (date === undefined) {
+	if (date === undefined || date === null) {
 		return undefined
 	}
 	return DateTime.fromISO(date)

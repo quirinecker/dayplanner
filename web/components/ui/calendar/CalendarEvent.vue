@@ -10,6 +10,7 @@ const props = defineProps<{
 const emit = defineEmits<{
 	(e: 'move', mouseEvent: MouseEvent, event: Event): void,
 	(e: 'edit', event: Event): void
+	(e: 'raw-edit', event: Event): void
 	(e: 'delete', event: Event): void
 }>()
 
@@ -35,28 +36,50 @@ const top = computed(() => {
 	return Math.min(dimensions.value.from, dimensions.value.to)
 })
 
+const color = computed(() => {
+	if (props.event.event.task !== undefined) {
+		return 'secondary'
+	} else {
+		return 'primary'
+	}
+})
+
 function dragStart(e: DragEvent) {
 	console.log("start drag")
 	emit('move', e, props.event.event)
 	visible.value = false
 }
 
+function removeSchedule(event: Event) {
+	if (event.task === undefined) return
+	event.task.scheduled_at = undefined
+	emit('raw-edit', event)
+}
+
 </script>
 
 <template>
 	<UPopover :content="{ side: 'right' }" arrow>
-		<div class="absolute rounded-lg h-0 top-20 bg-black opacity-45 p-2 flex flex-col z-10" @mousedown.stop
+		<UBadge class="absolute z-10 items-start flex flex-col" variant="subtle" :color="color" @mousedown.stop
 			@mouseover.stop @mouseup.stop draggable="true" @dragstart="dragStart"
 			:style="{ top: `${top}%`, height: `${height}%`, left: `${left}%`, width: `${widht}%` }">
-			<div>{{ event.event.from.toFormat('HH:mm') }} - {{ event.event.to.toFormat('HH:mm') }}</div>
+			<div class="flex items-center gap-1 overflow-hidden">
+				{{ event.event.from.toFormat('HH:mm') }} - {{ event.event.to.toFormat('HH:mm') }}
+				<UIcon name="material-symbols:task-alt" v-if="event.event.task?.done" />
+
+			</div>
 			<div>{{ event.event.title }}</div>
-		</div>
+		</UBadge>
 		<template #content>
 			<UCard class="w-xl">
 				<template #header>
 					<div class="flex flex-row justify-between items-center">
 						<h1>{{ event.event.title }}</h1>
 						<nav class="flex flex-row gap-2">
+							<UTooltip text="remove schedule" v-if="event.event.task !== undefined">
+								<UButton icon="material-symbols:cancel-outline"
+									@click="() => removeSchedule(event.event)" />
+							</UTooltip>
 							<UButton icon="i-lucide-pencil" @click="emit('edit', event.event)"></UButton>
 							<UButton icon="i-lucide-trash" @click="emit('delete', event.event)"></UButton>
 						</nav>

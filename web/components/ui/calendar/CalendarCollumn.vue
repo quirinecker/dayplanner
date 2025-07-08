@@ -10,12 +10,14 @@ const props = defineProps<{
 	seperators: Seperator[],
 	day: DateTime
 	events: CollissionWrapper[][]
-	date: DateTime
+	date: DateTime,
+	taskDraggingActive: boolean
 }>()
 
 const emit = defineEmits<{
 	(e: 'quick-create', day: DateTime, event: EventDimensions): void,
 	(e: 'edit', event: Event): void
+	(e: 'raw-edit', event: Event): void
 	(e: 'moved', event: Event): void
 	(e: 'delete', event: Event): void
 	(e: 'edit-task', task: Task): void
@@ -165,11 +167,23 @@ function updateTaskWithDraggedTask() {
 	draggedTask.value.target.scheduled_at = draggedTask.value.dragInfo.date.startOf('day').plus({
 		minutes: draggedTask.value.dragInfo.top / (column.value?.offsetHeight ?? 1) * 24 * 60
 	})
-	
+
 	emit('edit-task', draggedTask.value.target)
 
 	draggedTask.value = undefined
 }
+
+const moveColor = computed(() => {
+	if (draggedTask.value !== undefined) {
+		return 'secondary'
+	}
+
+	if (draggedEvent.value !== undefined && draggedEvent.value.target.task !== undefined) {
+		return 'secondary'
+	}
+
+	return 'primary'
+})
 
 </script>
 
@@ -187,23 +201,23 @@ function updateTaskWithDraggedTask() {
 			<CalendarSeperator v-for="sep in seperators" :seperator="sep">
 				<hr class="w-full border-muted">
 			</CalendarSeperator>
-			<div class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
-				:style="{ height: `${height}px`, top: `${top}px` }"></div>
+			<UBadge class="absolute w-11/12 p-0" variant="subtle" :style="{ height: `${height}px`, top: `${top}px` }">
+			</UBadge>
 
 			<div v-for="[index, column] in events.entries()" class="flex flex-row w-11/12 h-full absolute top-0">
 				<CalendarEvent v-for="event in column" :event="event" :columnIndex="index" @move="eventMove"
-					@edit="event => emit(`edit`, event)" @delete="event => emit(`delete`, event)" />
+					@edit="event => emit(`edit`, event)" @delete="event => emit(`delete`, event)" @raw-edit="event => emit(`raw-edit`, event)" />
 			</div>
 
-			<div v-if="draggedEvent !== undefined && draggedEvent.date.equals(props.day)"
-				class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
-				:style="{ height: `${draggedEvent.height}px`, top: `${draggedEvent.top}px` }"></div>
-			<div v-if="draggedTask !== undefined && draggedTask.dragInfo !== undefined && draggedTask.dragInfo.date.equals(props.day)"
-				class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
-				:style="{ height: `${draggedTask.dragInfo.height}px`, top: `${draggedTask.dragInfo.top}px` }"></div>
+			<UBadge v-if="draggedEvent !== undefined && draggedEvent.date.equals(props.day)" class="absolute w-11/12"
+				variant="subtle" :color="moveColor"
+				:style="{ height: `${draggedEvent.height}px`, top: `${draggedEvent.top}px` }"></UBadge>
+			<UBadge
+				v-if="draggedTask !== undefined && draggedTask.dragInfo !== undefined && taskDraggingActive && draggedTask.dragInfo.date.equals(props.day) && draggedTask.active"
+				class="absolute w-11/12" variant="subtle" :color="moveColor"
+				:style="{ height: `${draggedTask.dragInfo.height}px`, top: `${draggedTask.dragInfo.top}px` }"></UBadge>
 		</div>
 	</div>
 </template>
 
-<style scoped></style>
 <style scoped></style>

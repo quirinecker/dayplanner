@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { UFormField } from '#components';
+import { UFormField, UInputMenu } from '#components';
 import { DateTime } from 'luxon';
 import * as z from 'zod';
 
@@ -32,6 +32,20 @@ const modalTitle = computed(() => {
 const modalDescription = computed(() => {
 	return props.action === 'create' ? 'Create task with description, due date and name' : 'Edit description, due date and name'
 })
+
+const timeSuggestions = ref<string[]>((() => {
+	const times = [];
+
+	for (let hour = 0; hour < 24; hour++) {
+		for (let minute = 0; minute < 60; minute += 10) {
+			const hh = String(hour).padStart(2, '0');
+			const mm = String(minute).padStart(2, '0');
+			times.push(`${hh}:${mm}`);
+		}
+	}
+
+	return times;
+})())
 
 watchEffect(() => {
 	titleField.value = props.input.title ?? ''
@@ -89,6 +103,11 @@ function cancel() {
 	open.value = false
 }
 
+const formatOptions: Intl.NumberFormatOptions = {
+      signDisplay: 'negative',
+      minimumFractionDigits: 1
+}
+
 </script>
 
 <template>
@@ -96,28 +115,30 @@ function cancel() {
 		<template #body>
 			<div class="flex flex-col gap-2">
 				<div class="flex flex-row gap-2">
-					<UFormField label="Title">
-					<UInput type="text" class="w-full" placeholder="Name" v-model="titleField" required />
+					<UFormField label="Title" class="flex-1/2">
+						<UInput type="text" class="w-full" placeholder="Name" v-model="titleField" required />
 					</UFormField>
-					<UFormField label="Estimated time in hours">
-					<UInput type="number" class="grow" placeholder="estimated time in hours" v-model="estimatedTimeField"
-						icon="mdi:stopwatch-outline" required />
+					<UFormField label="Estimated time in hours" class="flex-1/2">
+						<UInputNumber class="grow" placeholder="estimated time in hours"
+							v-model="estimatedTimeField" icon="mdi:stopwatch-outline" :step-snapping="false" :format-options="formatOptions" :min="0" required />
 					</UFormField>
 				</div>
-				<UFormField label="Deadline" :ui="{ container: 'flex flex-row gap-2'}">
-					<UInput type="date" class="grow" placeholder="due data e.g 2025-06-16" v-model="dueDateField"
+				<UFormField label="Deadline" :ui="{ container: 'flex flex-row gap-2' }">
+					<UInput type="date" class="flex-1/2" placeholder="due data e.g 2025-06-16" v-model="dueDateField"
 						icon="i-lucide-calendar" required />
-					<UInput class="grow" placeholder="due time e.g 15:34" v-model="dueTimeField" icon="i-lucide-clock"
-						required />
+					<UInput class="flex-1/2" placeholder="due time e.g 15:34" v-model="dueTimeField"
+						icon="i-lucide-clock" :create-item="true" required />
 				</UFormField>
-				<UFormField label="Scheduled at" :ui="{ container: 'flex flex-row gap-2'}" v-if="props.input.scheduled_at">
-					<UInput type="date" class="grow" placeholder="schedule data e.g 2025-06-16" v-model="scheduledAtDateField"
-						icon="i-lucide-calendar" required />
-					<UInput class="grow" placeholder="schedule time e.g 15:34" v-model="scheduledAtTimeField" icon="i-lucide-clock"
-						required />
+				<UFormField label="Scheduled at" :ui="{ container: 'flex flex-row gap-2' }"
+					v-if="props.input.scheduled_at">
+					<UInput type="date" class="flex-1/2" placeholder="schedule data e.g 2025-06-16"
+						v-model="scheduledAtDateField" icon="i-lucide-calendar" required />
+					<UInput class="flex-1/2" placeholder="schedule time e.g 15:34" v-model="scheduledAtTimeField"
+						icon="i-lucide-clock" :create-item="true" required/>
 				</UFormField>
 				<UFormField label="Description">
-					<UTextarea type="text" class="w-full" placeholder="Description" v-model="descriptionField" required />
+					<UTextarea type="text" class="w-full" placeholder="Description" v-model="descriptionField"
+						required />
 				</UFormField>
 			</div>
 		</template>
