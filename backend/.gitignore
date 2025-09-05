@@ -2,3 +2,4 @@ node_modules
 local.db
 drizzle
 bun.lockb
+dist
